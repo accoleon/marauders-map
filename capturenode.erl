@@ -35,8 +35,7 @@ loop(Port, ServerNode, ID) ->
 	receive
 		{Port, Data} ->
 			{_,{_,Chunk}} = Data, % strip out unnecessary data
-			Tokens = string:tokens(Chunk, " "),
-			[MAC, SeqNo, SignalStrength] = Tokens,
+			[MAC, SeqNo, SignalStrength] = string:tokens(Chunk, " "),
 			% Sends a tuple to ServerNode with capturenode, MAC address, SS and SeqNo 
 			%rpc:call(ServerNode, servernode, store, [{node(), MAC, list_to_integer(SignalStrength), list_to_integer(SeqNo)}]),
 			{servernode, ServerNode} ! {ID, {MAC, list_to_integer(SignalStrength), list_to_integer(SeqNo)}},
