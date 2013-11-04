@@ -4,3 +4,5 @@
 {tshark, "sudo tshark -f \"wlan[0] != 0x80\" -Y \"wlan.sa && wlan.seq && radiotap.dbm_antsignal\" -I -N m -Tfields -E separator=/s -e wlan.sa -e wlan.seq -e radiotap.dbm_antsignal -l"}.
 % the address of the server node
 {servernode, 'dumbledore@192.168.1.3'}.
+% the identifier of the capture node
+{cap, nodeA}.
