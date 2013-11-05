@@ -26,7 +26,7 @@ loop() ->
 	receive
 		{From, {Mac, SS, SeqNo}} ->
 			Hash = get_key(Mac, SeqNo),
-			NewRow = setelement(get_record_position(From), #row{hash=Hash, lastupdated=time_stamp()}, SS),
+			NewRow = setelement(get_record_position(From), #row{hash=Hash, mac=Mac, lastupdated=time_stamp()}, SS),
 			case ets:insert_new(rawdata, NewRow) of
 				true -> ok;
 				false ->
