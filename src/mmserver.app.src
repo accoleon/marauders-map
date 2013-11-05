@@ -1,0 +1,14 @@
+{application, mmserver,
+ [
+  {description, "Marauder's Map Server"},
+  {vsn, "1"},
+  {modules, []},
+  {registered, [servernode, mmserver_sup]},
+  {applications, [
+  	kernel,
+	stdlib,
+	cowboy
+  ]},
+  {mod, { mmserver_app, []}},
+  {env, []}
+ ]}.

@@ -3,6 +3,6 @@
 % wlan.sa: Source Mac Address wlan.seq: Sequence Number radiotap.dbm_antsignal: signal strength
 {tshark, "sudo tshark -f \"wlan[0] != 0x80\" -Y \"wlan.sa && wlan.seq && radiotap.dbm_antsignal\" -I -N m -Tfields -E separator=/s -e wlan.sa -e wlan.seq -e radiotap.dbm_antsignal -l"}.
 % the address of the server node
-{servernode, 'dumbledore@128-223-223-210-wireless.uoregon.edu'}.
+{servernode, 'mmserver@127.0.0.1'}.
 % the identifier of the capture node
 {cap, nodeA}.

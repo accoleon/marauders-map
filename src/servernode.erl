@@ -2,18 +2,19 @@
 -author("Kevin Xu").
 -include_lib("stdlib/include/ms_transform.hrl").
 -include("records.hrl").
--export([start/0, stop/0, trilaterate/0, age_data/0, list/0, time_stamp/0, get_key/2, get_rawdata/0]).
+-export([start_link/0, stop/0, trilaterate/0, age_data/0, list/0, time_stamp/0, get_key/2, get_rawdata/0]).
 
 %% Interval between culling data in milliseconds
 age_interval() -> 10000.
 
 %% Start the server
-start() ->
+start_link() ->
 	ets:new(rawdata, [set, named_table, {keypos, #row.hash}]),
 	Pid = spawn(fun() -> loop() end),
 	ets:give_away(rawdata, Pid, gift),
 	erlang:send_after(age_interval(), Pid, agedata),
-	register(servernode, Pid).
+	register(servernode, Pid),
+	{ok, Pid}.
 	
 %% Stop the server
 stop() ->
