@@ -1,4 +1,4 @@
-PROJECT = mmserver
+PROJECT = mm
 
 DEPS = cowboy
 dep_cowboy = pkg://cowboy master

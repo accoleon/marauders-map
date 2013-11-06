@@ -1,4 +1,4 @@
--module(mmserver_ws_handler).
+-module(mm_ws_handler).
 -behaviour(cowboy_websocket_handler).
 
 -export([init/3]).
@@ -11,6 +11,7 @@ init({tcp, http}, _Req, _Opts) ->
 	{upgrade, protocol, cowboy_websocket}.
 
 websocket_init(_TransportName, Req, _Opts) ->
+	register(?MODULE, self()),
 	erlang:start_timer(1000, self(), <<"Hello!">>),
 	{ok, Req, undefined_state}.
 
@@ -19,8 +20,10 @@ websocket_handle({text, Msg}, Req, State) ->
 websocket_handle(_Data, Req, State) ->
 	{ok, Req, State}.
 
+websocket_info({_Pid, {_Module, _Broadcast}, Msg}, Req, State) ->
+	{reply, {text, Msg}, Req, State};
 websocket_info({timeout, _Ref, Msg}, Req, State) ->
-	erlang:start_timer(1000, self(), <<"How' you doin'?">>),
+	%erlang:start_timer(1000, self(), <<"How' you doin'?">>),
 	{reply, {text, Msg}, Req, State};
 websocket_info(_Info, Req, State) ->
 	{ok, Req, State}.
