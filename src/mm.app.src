@@ -1,0 +1,16 @@
+{application, mm,
+ [
+  {description, "Marauder's Map"},
+  {vsn, "0.1"},
+  {modules, []},
+  {registered, [mm_analyzer, mm_receiver, mm_sup]},
+  {applications, [
+  	kernel,
+	stdlib,
+	crypto,
+	cowboy,
+	gproc
+  ]},
+  {mod, { mm_app, []}},
+  {env, []}
+ ]}.
