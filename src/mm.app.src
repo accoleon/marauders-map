@@ -3,7 +3,7 @@
   {description, "Marauder's Map"},
   {vsn, "0.1"},
   {modules, []},
-  {registered, [mm_analyzer, mm_ws_handler, mm_receiver, mm_sup]},
+  {registered, [mm_analyzer, mm_broadcaster, mm_receiver, mm_sup]},
   {applications, [
   	kernel,
 	stdlib,

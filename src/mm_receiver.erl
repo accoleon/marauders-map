@@ -59,6 +59,7 @@ handle_call(_Req, _From, State) ->
 handle_cast(dump, State) ->
 	List = ets:tab2list(?MODULE),
 	io:format("~p~n", [List]),
+	{mm_ws_handler, node()} ! {self(), {?MODULE, mm_ws_handler}, <<"Receiver called dump">>},
 	{noreply, State};
 	
 %% Stop handle
@@ -81,9 +82,9 @@ handle_cast({store, {From, {MAC, SS, SeqNo, MicroTime}}}, State) ->
 						is_integer(Row#row.nodeA) andalso is_integer(Row#row.nodeB) andalso is_integer(Row#row.nodeC) ->
 							% Send row to be analyzed
 							{mm_analyzer, node()} ! {data, Row},
+							
 							% Delete the record
 							ets:delete(State, Hash);
-							%{mmserver_ws_handler, node()} ! {self(), {?MODULE, ws_handler}, <<"HELLO FROM SERVERNODE!">>},
 						true ->
 							do_nothing
 					end;
