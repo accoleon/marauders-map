@@ -60,8 +60,9 @@ loop(Parent, Deb) ->
 			case ets:lookup(trainers, Row#row.mac) of
 				[] -> % not a trainer, data to be analyzed
 					trilaterate(Row#row.mac, Row#row.nodeA, Row#row.nodeATime, Row#row.nodeB, Row#row.nodeBTime, Row#row.nodeC, Row#row.nodeCTime);
-				[{_MAC, _Name}] ->
-					%io:format("Trainer device detected \"~s\" with MAC address ~s~n", [Name, MAC]),
+				[{MAC, Name}] ->
+					WSKey = {pubsub, ws_broadcast},
+					gproc:send({p, l, WSKey}, {self(), WSKey, io_lib:format("Trainer device detected \"~s\" with MAC address ~s~n", [Name, MAC])}),
 					ets:insert(trainingdata, Row)
 			end,			
 			%io:format("Received ~p~n", [Row]),

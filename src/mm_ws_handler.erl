@@ -7,11 +7,14 @@
 -export([websocket_info/3]).
 -export([websocket_terminate/3]).
 
+-define(WSKey, {pubsub, ws_broadcast}).
+
 init({tcp, http}, _Req, _Opts) ->
 	{upgrade, protocol, cowboy_websocket}.
 
 websocket_init(_TransportName, Req, _Opts) ->
 	%register(?MODULE, self()),
+	gproc:reg({p, l, ?WSKey}),
 	erlang:start_timer(1000, self(), <<"Hello!">>),
 	{ok, Req, undefined_state}.
 
@@ -20,7 +23,7 @@ websocket_handle({text, Msg}, Req, State) ->
 websocket_handle(_Data, Req, State) ->
 	{ok, Req, State}.
 
-websocket_info({_Pid, {_Module, _Broadcast}, Msg}, Req, State) ->
+websocket_info({_Pid, ?WSKey, Msg}, Req, State) ->
 	{reply, {text, Msg}, Req, State};
 websocket_info({timeout, _Ref, Msg}, Req, State) ->
 	erlang:start_timer(1000, self(), <<"How' you doin'?">>),
