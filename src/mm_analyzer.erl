@@ -5,7 +5,9 @@
 %% OTP callbacks
 -export([init/1, system_continue/3, system_terminate/4, system_code_change/4, write_debug/3]).
 
--export([start_link/0, trilaterate/7, v_sum/2]).
+-export([start_link/0, trilaterate/7, v_sum/2, calculate_distance/1]).
+
+-define(WSKey, {pubsub, ws_broadcast}).
 
 %% Assume nodes A, B, C are on a bottom left origin 100 x 100 grid
 %% A - 21, 20
@@ -27,9 +29,11 @@ init(Parent) ->
 	p3(),
 	ets:new(trainers, [set, named_table]),
 	ets:insert(trainers, [
-		{<<"b8:e8:56:b6:dd:22">>, <<"Kevin's iPhone 5s">>}
+		{<<"b8:e8:56:b6:dd:22">>, <<"Kevin's iPhone 5s">>},
+		{<<"bc:f5:ac:f6:93:37">>, <<"Juston's Overpowered Nexus 5">>},
+		{<<"34:23:ba:45:21:8e">>, <<"Thuc's Phone">>}
 	]),
-	io:format("~p~n", [filename:absname("../trainingdata.ets")]),
+	%io:format("~p~n", [filename:absname("../trainingdata.ets")]),
 	case ets:file2tab("../trainingdata.ets") of
 		{ok, _} -> do_nothing; % table is retrieved from file
 		{error, _} -> % cannot retrieve table, create new one instead
@@ -60,9 +64,12 @@ loop(Parent, Deb) ->
 			case ets:lookup(trainers, Row#row.mac) of
 				[] -> % not a trainer, data to be analyzed
 					trilaterate(Row#row.mac, Row#row.nodeA, Row#row.nodeATime, Row#row.nodeB, Row#row.nodeBTime, Row#row.nodeC, Row#row.nodeCTime);
-				[{MAC, Name}] ->
-					WSKey = {pubsub, ws_broadcast},
-					gproc:send({p, l, WSKey}, {self(), WSKey, io_lib:format("Trainer device detected \"~s\" with MAC address ~s~n", [Name, MAC])}),
+					%io:format("raw: ~p~n", [Row]),
+					%gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p,~p,~p,~p~n", [Row#row.hash, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])});
+					%gproc:send({p, l ,?WSKey}, {self(), ?WSKey, io_lib:format("~s,~s,~s,~s~n", [Row#row.hash, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])});
+				[{_MAC, Name}] -> % a trainer device
+					gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p,~p,~p,~p~n", [Name, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])}),
+					gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p distances: ~fm ~fm ~fm~n", [Name, calculate_distance(Row#row.nodeA), calculate_distance(Row#row.nodeB), calculate_distance(Row#row.nodeC)])}),
 					ets:insert(trainingdata, Row)
 			end,			
 			%io:format("Received ~p~n", [Row]),
@@ -81,6 +88,13 @@ trilaterate(MAC, R1, R1Time, R2, R2Time, R3, R3Time) ->
 	%io:format("Mac: ~p Data: ~p~n", [MAC, NormalizedList]),
 	{MAC, R1, R1Time, R2, R2Time, R3, R3Time}.
 	
+calculate_distance(InputDb) ->
+	% InputFreq = 2412, % Frequency for channel 1 of wifi 2.4ghz spectrum in mhz
+	% Exp = (27.55 - (20 * math:log10(InputFreq)) - InputDb) / 20.0,
+	% math:pow(10.0, Exp).
+	K = -36,
+	math:exp((K-InputDb)/20).
+
 v_dist(V1, V2) ->
 	V2Negative = lists:map(fun (X) -> -X end, V2),
 	V3 = v_sum(V1, V2Negative),

@@ -13,9 +13,8 @@ init({tcp, http}, _Req, _Opts) ->
 	{upgrade, protocol, cowboy_websocket}.
 
 websocket_init(_TransportName, Req, _Opts) ->
-	%register(?MODULE, self()),
 	gproc:reg({p, l, ?WSKey}),
-	erlang:start_timer(1000, self(), <<"Hello!">>),
+	erlang:start_timer(1000, self(), <<"1150, -10, -10, -10">>),
 	{ok, Req, undefined_state}.
 
 websocket_handle({text, Msg}, Req, State) ->
@@ -26,10 +25,11 @@ websocket_handle(_Data, Req, State) ->
 websocket_info({_Pid, ?WSKey, Msg}, Req, State) ->
 	{reply, {text, Msg}, Req, State};
 websocket_info({timeout, _Ref, Msg}, Req, State) ->
-	erlang:start_timer(1000, self(), <<"How' you doin'?">>),
+	%erlang:start_timer(3000, self(), <<"1150, -20, -40, -10">>),
 	{reply, {text, Msg}, Req, State};
 websocket_info(_Info, Req, State) ->
 	{ok, Req, State}.
 
 websocket_terminate(_Reason, _Req, _State) ->
+	gproc:unreg({p, l, ?WSKey}),
 	ok.
