@@ -34,7 +34,7 @@ Enter the `src` directory in the root of the Marauder's Map project, then edit t
 
 Change `localhost` to an ip address of the server.
 
-Additionally, the tshark line may need to be changed depending on your wifi card, thus run `ifconfig` to see what is the identifier of your wireless card, and add `-i wlan1` right after `sudo tshark `. For examplem if `ifconfig` shows your wireless interface to be `wlan0`, the tshark line would look like:
+Additionally, the tshark line may need to be changed depending on your wifi card, thus run `ifconfig` to see what is the identifier of your wireless card, and add `-i wlan1` right after `sudo tshark `. For example if `ifconfig` shows your wireless interface to be `wlan0`, the tshark line would look like:
 
 	{tshark, "sudo tshark -i wlan0 -f \"wlan[0] != 0x80\" -Y \"wlan.sa && wlan.seq && radiotap.dbm_antsignal\" -I -N m -Tfields -E separator=/s -e      wlan.sa -e wlan.seq -e radiotap.dbm_antsignal -l"}.
 
