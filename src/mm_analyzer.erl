@@ -14,6 +14,9 @@
 %% B - 10, 80
 %% C - 50, 10
 
+-record(state, {is_training, trainer, x, y}).
+-record(training, {timestamp, mac, name, x, y, nodeA, nodeB, nodeC}).
+
 p1() -> [0, 0].
 p2() -> [100, 0].
 p3() -> [0, 100].
@@ -37,14 +40,15 @@ init(Parent) ->
 	case ets:file2tab("../trainingdata.ets") of
 		{ok, _} -> do_nothing; % table is retrieved from file
 		{error, _} -> % cannot retrieve table, create new one instead
-			ets:new(trainingdata, [set, named_table, {keypos, #row.hash}]),
+			ets:new(trainingdata, [set, named_table, {keypos, #training.timestamp}]),
 			io:format("created new ets table since file does not exist~n")
 	end,
 	proc_lib:init_ack(Parent, {ok, self()}),
-	loop(Parent, Deb).
+	State = #state{is_training=false},
+	loop(Parent, Deb, State).
 	
-system_continue(Parent, Deb, _State) ->
-	loop(Parent, Deb).
+system_continue(Parent, Deb, State) ->
+	loop(Parent, Deb, State).
 	
 system_terminate(Reason, _Parent, _Deb, _State) ->
 	io:format("mm_analyzer terminating~n"),
@@ -57,7 +61,7 @@ system_code_change(_Misc, _Module, _OldVsn, _Extra) ->
 write_debug(Dev, Event, Name) ->
     io:format(Dev, "~p event = ~p~n", [Name, Event]).
 	
-loop(Parent, Deb) ->
+loop(Parent, Deb, State) ->
 	receive
 		{data, Data} ->
 			Row = Data#row{},
@@ -68,17 +72,36 @@ loop(Parent, Deb) ->
 					%gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p,~p,~p,~p~n", [Row#row.hash, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])});
 					%gproc:send({p, l ,?WSKey}, {self(), ?WSKey, io_lib:format("~s,~s,~s,~s~n", [Row#row.hash, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])});
 				[{_MAC, Name}] -> % a trainer device
-					gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p,~p,~p,~p~n", [Name, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])}),
-					gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p distances: ~fm ~fm ~fm~n", [Name, calculate_distance(Row#row.nodeA), calculate_distance(Row#row.nodeB), calculate_distance(Row#row.nodeC)])}),
-					ets:insert(trainingdata, Row)
+					%io:format("~p ~p ~n", [State, Row]),
+					train(State, Row, Name)
 			end,			
 			%io:format("Received ~p~n", [Row]),
-			loop(Parent, Deb);
+			loop(Parent, Deb, State);
+		{training_start, Trainer, X, Y} ->
+			NewState = #state{is_training=true, trainer = list_to_bitstring(Trainer), x=list_to_integer(X), y=list_to_integer(Y)},
+			io:format("Training started with ~p~n", [NewState]),
+			loop(Parent, Deb, NewState);
+		{training_end} ->
+			NewState = #state{is_training=false},
+			io:format("Training ended with ~p~n", [State]),
+			loop(Parent, Deb, NewState);
 		{'EXIT', _From, Reason} ->
 			system_terminate(Reason, Parent, Deb, undefined);
 		{system, From, Request} ->
 			sys:handle_system_msg(Request, From, Parent, ?MODULE, Deb, undefined)
 	end.
+	
+train(State=#state{is_training=true}, Row, Name) ->
+	#state{trainer=Trainer, x=X, y=Y} = State,
+	%io:format("is training; ~p~n", [State]),
+	NewTraining = #training{timestamp=now(), mac=Trainer, name=Name, x=X, y=Y, nodeA=Row#row.nodeA, nodeB=Row#row.nodeB, nodeC=Row#row.nodeC},
+	ets:insert(trainingdata, NewTraining),
+	gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("TRAINING_RECEIVED^~p,~p,~p,~p,~p,~p~n", [Name, X, Y, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])}),
+	ok;
+train(_State, _Row, _Name) ->
+	ok.
+	%gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p,~p,~p,~p~n", [Name, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])}),
+	%gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p distances: ~fm ~fm ~fm~n", [Name, calculate_distance(Row#row.nodeA), calculate_distance(Row#row.nodeB), calculate_distance(Row#row.nodeC)])}).
 	
 trilaterate(MAC, R1, R1Time, R2, R2Time, R3, R3Time) ->
 	List = [{nodeA, R1, R1Time}, {nodeB, R2, R2Time}, {nodeC, R3, R3Time}],

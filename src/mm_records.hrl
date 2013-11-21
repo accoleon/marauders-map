@@ -6,3 +6,5 @@
 
 %% needs more accuracy in order to make use of multilateration - each node has its own transmitted time so we can calculate TDOA (Time Difference of Arrival)
 -record(row, {hash, mac, nodeA, nodeATime, nodeB, nodeBTime, nodeC, nodeCTime, lastupdated}).
+
+-record(trainer, {mac, name}).

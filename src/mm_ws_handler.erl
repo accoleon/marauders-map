@@ -1,5 +1,6 @@
 -module(mm_ws_handler).
 -behaviour(cowboy_websocket_handler).
+-include("mm_records.hrl").
 
 -export([init/3]).
 -export([websocket_init/3]).
@@ -18,7 +19,26 @@ websocket_init(_TransportName, Req, _Opts) ->
 	{ok, Req, undefined_state}.
 
 websocket_handle({text, Msg}, Req, State) ->
-	{reply, {text, << "That's what she said! ", Msg/binary >>}, Req, State};
+	String = binary_to_list(Msg),
+	[Cmd, Args] = string:tokens(String, "^"),
+	case Cmd of
+		"GET_TRAINERS" ->
+			List = ets:tab2list(trainers),
+			Bin = jiffy:encode({List}),
+			{reply, {text, << "TRAINERS^", Bin/bitstring>>}, Req, State};
+		"TRAINING_START" ->
+			[Trainer, X, Y] = string:tokens(Args, ","),
+			mm_analyzer ! {training_start, Trainer, X , Y},
+			{reply, {text, << "TRAINING STARTED">>}, Req, State};
+		"TRAINING_END" ->
+			mm_analyzer ! {training_end},
+			{reply, {text, << "TRAINING ENDED">>}, Req, State};
+		"RUBBISH" ->
+			%io:format("Rubbish received~n"),
+			{ok, Req, State};
+		true -> % default for non-recognized text
+			{reply, {text, << "That's what she said! ", Msg/binary >>}, Req, State}
+	end;
 websocket_handle(_Data, Req, State) ->
 	{ok, Req, State}.
 

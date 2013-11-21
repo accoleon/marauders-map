@@ -9,7 +9,8 @@
 	stdlib,
 	crypto,
 	cowboy,
-	gproc
+	gproc,
+	jiffy
   ]},
   {mod, { mm_app, []}},
   {env, []}
