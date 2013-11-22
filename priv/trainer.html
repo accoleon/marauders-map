@@ -27,13 +27,17 @@
 </head>
 <body>
 	<script type="text/javascript">
+	var ROWS = 20; // y values
+	var COLS = 30; // x values
+	var NUM_OF_TRAINING_RECEIVED = 10; // number of training_received msgs required before considered complete
+	var GARBAGE_INTERVAL = 200; // in milliseconds
     var websocket;
-	var mapArray = zero2D(20, 30);
+	var mapArray = zero2D(ROWS, COLS);
     $(document).ready(init);
 	
     function init() {
 		var host = location.hostname;
-		$('#server').val('ws://' + host + ':8080/websocket');
+		$('#server').val('ws://' + host + ':8080/websocket'); // automatically get hostname to fill in
         if("WebSocket" in window){
             connect();
         };
@@ -47,7 +51,8 @@
 	  while (cols--) row.push(0);
 	  while (rows--) array.push(row.slice());
 	  return array;
-	}
+	};
+	
     function connect()
     {
         wsHost = $("#server").val()
@@ -88,6 +93,7 @@
     };
 	
 	function createButtons() {
+		$('#map').empty();
 		for (var j = 0; j < 20; j++) {
 			$('#map').append('<tr>');
 			for (var i = 0; i < 30; i++) {
@@ -150,7 +156,7 @@
 			var x = data[1];
 			var y = data[2];
 			mapArray[x][y]++;
-			if (mapArray[x][y] == 10) {
+			if (mapArray[x][y] == NUM_OF_TRAINING_RECEIVED) {
 				$('td[x=' + x + '][y=' + y + ']').attr({
 					status: 'complete',
 					'class': 'complete'

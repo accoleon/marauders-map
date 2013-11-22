@@ -53,6 +53,7 @@ system_continue(Parent, Deb, State) ->
 system_terminate(Reason, _Parent, _Deb, _State) ->
 	io:format("mm_analyzer terminating~n"),
 	ets:tab2file(trainingdata, "../trainingdata.ets"),
+	?MODULE:dump(),
 	exit(Reason).
 	
 system_code_change(_Misc, _Module, _OldVsn, _Extra) ->
@@ -63,7 +64,6 @@ write_debug(Dev, Event, Name) ->
 	
 dump() ->
 	List = ets:tab2list(trainingdata),
-	io:format("~p~n", [List]),
 	{ok, File} = file:open("../trainingdata.txt", [write]),
 	lists:foreach(fun (T) -> io:fwrite(File, "~w,~w,~w,~w,~w,~w,~s,~s~n", [T#training.timestamp, T#training.x, T#training.y, T#training.nodeA, T#training.nodeB, T#training.nodeC, T#training.mac, T#training.name]) end, List),
 	file:close(File).
@@ -79,7 +79,7 @@ loop(Parent, Deb, State) ->
 					%gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p,~p,~p,~p~n", [Row#row.hash, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])});
 					%gproc:send({p, l ,?WSKey}, {self(), ?WSKey, io_lib:format("~s,~s,~s,~s~n", [Row#row.hash, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])});
 				[{_MAC, Name}] -> % a trainer device
-					%io:format("~p ~p ~n", [State, Row]),
+					%io:format("~p ~p ~p~n", [State, Row, Name]),
 					train(State, Row, Name)
 			end,			
 			%io:format("Received ~p~n", [Row]),
@@ -98,7 +98,7 @@ loop(Parent, Deb, State) ->
 			sys:handle_system_msg(Request, From, Parent, ?MODULE, Deb, undefined)
 	end.
 	
-train(State=#state{is_training=true}, Row, Name) ->
+train(State=#state{is_training=true}, Row, Name) when State#state.trainer == Row#row.mac ->
 	#state{trainer=Trainer, x=X, y=Y} = State,
 	%io:format("is training; ~p~n", [State]),
 	NewTraining = #training{timestamp=mm_misc:timestamp(microsecs), mac=Trainer, name=Name, x=X, y=Y, nodeA=Row#row.nodeA, nodeB=Row#row.nodeB, nodeC=Row#row.nodeC},
