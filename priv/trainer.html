@@ -33,7 +33,7 @@
 	
     function init() {
 		var host = location.hostname;
-		alert($('#server').val());
+		$('#server').val('ws://' + host + ':8080/websocket');
         if("WebSocket" in window){
             connect();
         };

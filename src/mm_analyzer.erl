@@ -5,7 +5,7 @@
 %% OTP callbacks
 -export([init/1, system_continue/3, system_terminate/4, system_code_change/4, write_debug/3]).
 
--export([start_link/0, trilaterate/7, v_sum/2, calculate_distance/1]).
+-export([start_link/0, trilaterate/7, v_sum/2, calculate_distance/1, dump/0]).
 
 -define(WSKey, {pubsub, ws_broadcast}).
 
@@ -40,7 +40,7 @@ init(Parent) ->
 	case ets:file2tab("../trainingdata.ets") of
 		{ok, _} -> do_nothing; % table is retrieved from file
 		{error, _} -> % cannot retrieve table, create new one instead
-			ets:new(trainingdata, [set, named_table, {keypos, #training.timestamp}]),
+			ets:new(trainingdata, [ordered_set, named_table, {keypos, #training.timestamp}]),
 			io:format("created new ets table since file does not exist~n")
 	end,
 	proc_lib:init_ack(Parent, {ok, self()}),
@@ -60,6 +60,13 @@ system_code_change(_Misc, _Module, _OldVsn, _Extra) ->
 	
 write_debug(Dev, Event, Name) ->
     io:format(Dev, "~p event = ~p~n", [Name, Event]).
+	
+dump() ->
+	List = ets:tab2list(trainingdata),
+	io:format("~p~n", [List]),
+	{ok, File} = file:open("../trainingdata.txt", [write]),
+	lists:foreach(fun (T) -> io:fwrite(File, "~w,~w,~w,~w,~w,~w,~s,~s~n", [T#training.timestamp, T#training.x, T#training.y, T#training.nodeA, T#training.nodeB, T#training.nodeC, T#training.mac, T#training.name]) end, List),
+	file:close(File).
 	
 loop(Parent, Deb, State) ->
 	receive
@@ -94,7 +101,7 @@ loop(Parent, Deb, State) ->
 train(State=#state{is_training=true}, Row, Name) ->
 	#state{trainer=Trainer, x=X, y=Y} = State,
 	%io:format("is training; ~p~n", [State]),
-	NewTraining = #training{timestamp=now(), mac=Trainer, name=Name, x=X, y=Y, nodeA=Row#row.nodeA, nodeB=Row#row.nodeB, nodeC=Row#row.nodeC},
+	NewTraining = #training{timestamp=mm_misc:timestamp(microsecs), mac=Trainer, name=Name, x=X, y=Y, nodeA=Row#row.nodeA, nodeB=Row#row.nodeB, nodeC=Row#row.nodeC},
 	ets:insert(trainingdata, NewTraining),
 	gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("TRAINING_RECEIVED^~p,~p,~p,~p,~p,~p~n", [Name, X, Y, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])}),
 	ok;
