@@ -2,21 +2,43 @@
 <meta charset="utf-8">
 <style>
 
+html {
+	background-image:url('LeatherDesk.png');
+}
+
 body {
 	font-family: "Helvetica Neue", Helvetica, sans-serif;
-	margin: 1em auto 4em auto;
+	margin: 0 auto 0 auto;
+	padding: 0em;
 	position: relative;
-	tab-size: 2;
-	width: 960px;
+	width: 950px;
+}
+
+p {
+    margin: 0;
+}
+
+#page {
+	margin: 0em;
+	padding: 3em;
+	background-image:url('OldPaper.png');
+	background-position: top center;
+
+}
+
+#title {
+	display: block;
+	margin: -7em auto -5em auto;
 }
 
 .chart {
+	display: block;
+	margin: auto;
 	border: 1px solid black;
 	background-image: url('LokeyBirdeye.png');
 }
 
 .axis line, .axis path {
-	shape-rendering: crispEdges;
 	stroke: black;
 	fill: none;
 }
@@ -37,6 +59,10 @@ text.label {
 
 </style>
 <body>
+
+<div id="page">
+<img id="title" src="TheMaraudersMap.png">
+
 <script src="d3.v3.min.js"></script>
 <script>
 
@@ -64,7 +90,7 @@ var yAxis = d3.svg.axis()
 	.orient("left");
 
 // Add the SVG element to the body
-var chart = d3.select('body').append('svg')
+var chart = d3.select('#page').append('svg')
 		.attr('width', width + margin.right + margin.left)
 		.attr('height', height + margin.top + margin.bottom)
 		.attr('class', 'chart');
@@ -78,14 +104,14 @@ var main = chart.append('g')
 	.attr('class', 'main');
 
 // Draws the axes
-main.append("g")
-	.attr("class", "axis")
-	.attr("transform", "translate(0," + height + ")")
-	.call(xAxis);
+// main.append("g")
+// 	.attr("class", "axis")
+// 	.attr("transform", "translate(0," + height + ")")
+// 	.call(xAxis);
 
-main.append("g")
-	.attr("class", "axis")
-	.call(yAxis);
+// main.append("g")
+// 	.attr("class", "axis")
+// 	.call(yAxis);
 
 
 // Updates, adds, and removes points on the graph.
@@ -95,24 +121,58 @@ function update(data) {
 		.data(data);
 
 	node.each(function (d,i) {
+		console.log("------------");
+		//for(o in d) {
+		//	console.log("" + o + ": " + d[o]);
+		//}
 		var s = d3.select(this);
 		var c = s.selectAll("circle");
 		var t = s.selectAll("text");
+		var i = s.selectAll("image");
 
-		var tranDuration = lineDistance(c.attr("cx"), c.attr("cy"), x(d.x), y(d.y)) * 20;
+		var tranDuration = lineDistance(c.attr("cx"), c.attr("cy"), x(d.x), y(d.y)) * 10;
+
+		var deltaX = x(d.x) - c.attr("cx");
+		var deltaY = y(d.y) - c.attr("cy");
+		var angleInDegrees = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
 
 		c.transition()
-			.ease("cubic-out")
+			.ease("sin-out")
 			.duration(tranDuration)
 			.attr("cx", x(d.x))
 			.attr("cy", y(d.y))
 			.attr("r", 10);
 
 		t.transition()
-			.ease("cubic-out")
+			.ease("sin-out")
 			.duration(tranDuration)
 			.attr("x", x(d.x))
 			.attr("y", y(d.y)+20);
+
+		//console.log(angleInDegrees);
+		//console.log("translate(" + (i.attr("x") / width) + "," + (i.attr("y") / height) + ")");
+		//i
+		//	.transition()
+		//	.duration(2000)
+		//	.attrTween("transform", function (d) {
+		//		console.log(i.attr("tranform"));
+      	//		return d3.interpolateString("rotate(" + angleInDegrees + ", " + x(d.x) + ", " + y(d.y) + ")", "rotate(" + angleInDegrees + ", " + x(d.x) + ", " + y(d.y) + ")");
+    //}		)
+			//.attr("transform", "rotate(angleInDegrees)")
+			//.attr("x", x(d.x)-12)
+			//.attr("y", y(d.y)-18.5);
+//			.transform()
+//			.rotate(angleInDegrees);
+//			.transition()
+//			.duration(500)
+			//.attr("transform", "rotate(" + angleInDegrees + "," + x(d.x) + ", " + y(d.y) + ") translate(0,0)")
+			//.attr("transform", "rotate(" + angleInDegrees + "," + i.attr("x") + ", " + i.attr("y") + ")")
+			//.transition()
+			//.ease("cubic-out")
+			//.duration(tranDuration)
+			//.attr("x", x(d.x))
+			//.attr("y", y(d.y));
+			//.attr("transform", "rotate(" + angleInDegrees + ")");			
 	});
 
 	var enter = node.enter().append("g")
@@ -131,6 +191,14 @@ function update(data) {
 		.attr("y", function(d) {return y(d.y)+20;})
 		.attr("class", "label")
 		.style("text-anchor", "middle");
+
+	// enter.append("image")
+	// 	.attr("xlink:href", "FootSteps.png")
+	// 	.attr("width", 24)
+	// 	.attr("height", 37)
+	// 	.attr("x", function (d) {return x(d.x)-12;})
+	// 	.attr("y", function (d) {return y(d.y)-18.5;})
+	// 	.attr("class", "label");
 
 	// Add a fade in transition to all entering elements and child elements
 	enter.selectAll("*")
@@ -168,3 +236,5 @@ function randomPoint(i) {
 <div><button onclick="randomPoint(4);">4 Random Points</button></div>
 <div><button onclick="randomPoint(5);">5 Random Points</button></div>
 <div><button onclick="randomPoint(6);">6 Random Points</button></div>
+
+</div>
