@@ -41,17 +41,17 @@
         if("WebSocket" in window){
             connect();
         };
-		createButtons();
+		
 		$('#connected').hide();
 		$('#map').hide();
-    };
+    }
 	
 	function zero2D(rows, cols) {
 	  var array = [], row = [];
 	  while (cols--) row.push(0);
 	  while (rows--) array.push(row.slice());
 	  return array;
-	};
+	}
 	
     function connect()
     {
@@ -61,11 +61,11 @@
         websocket.onclose = function(evt) { onClose(evt) }; 
         websocket.onmessage = function(evt) { onMessage(evt) }; 
         websocket.onerror = function(evt) { onError(evt) }; 
-    };  
+    }
     
     function disconnect() {
         websocket.close();
-    };
+    }
 	
     function toggle_connection(){
         if(websocket.readyState == websocket.OPEN){
@@ -73,30 +73,29 @@
         } else {
             connect();
         };
-    };
+    }
 	
 	function onOpen(evt) {
-		$('#connected').show();
 		requestDropdown();
+		createButtons();
 		$('#map').show();
-	};
+	}
 	
-    function onClose(evt) { 
-        $('#connected').hide();
+    function onClose(evt) {
 		$('#map').hide();
-    };
+    }
 	
     function sendTxt(txt) {
         if(websocket.readyState == websocket.OPEN){
             websocket.send(txt);
-        };
-    };
+        }
+    }
 	
 	function createButtons() {
 		$('#map').empty();
-		for (var j = 0; j < 20; j++) {
+		for (var j = 0; j < ROWS; j++) {
 			$('#map').append('<tr>');
-			for (var i = 0; i < 30; i++) {
+			for (var i = 0; i < COLS; i++) {
 				var $cell = $('<td>').attr({
 					x: i,
 					y: j,
@@ -107,11 +106,11 @@
 				$('#map tr:last-child').append($cell);
 			}
 		}
-	};
+	}
 	
 	function requestDropdown() {
 		sendTxt('GET_TRAINERS^null');
-	};
+	}
 	
 	function onClick(evt) {
 		var $cell = $(evt.target);
@@ -124,21 +123,20 @@
 			});
 			var trainer = $('#trainers').val();
 			sendTxt('TRAINING_START^' + trainer + ',' + x + ',' + y);
-			toggleGarbage();
-		};
+			toggleGarbage(true);
+		}
 	}
 	
-	function toggleGarbage() {
-		if (toggleGarbage.enabled == true) {
+	function toggleGarbage(status) {
+		if (status == false) {
 			clearInterval(toggleGarbage.interval);
-			toggleGarbage.enabled = false;
 		} else {
 			toggleGarbage.interval = setInterval(function() {
 				sendTxt('RUBBISH^' + $.now());
-			}, 200);
-			toggleGarbage.enabled = true;
-		};
+			}, GARBAGE_INTERVAL);
+		}
 	}
+	
 	function onMessage(evt) {
 		//$('#log').prepend('<p>' + evt.data + '</p>');
 		var reply = evt.data.split('^');
@@ -161,21 +159,18 @@
 					status: 'complete',
 					'class': 'complete'
 				});
-				toggleGarbage();
+				toggleGarbage(false);
 				sendTxt('TRAINING_END^null');
 			};
 			break;
 		default:
 		}
-	};
+	}
 	
 	
 	</script>
 	<input type='text' id="server" value="ws://localhost:8080/websocket"></input>
 	<button type="button" onclick="toggle_connection()">connection</button>
-	<div id="connected">
-		Connected
-	</div>
 	<select id="trainers">
 		
 	</select>

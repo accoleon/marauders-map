@@ -9,8 +9,13 @@
 %% Starts a ?MODULE with default settings BUT with custom node location (nodeA, nodeB, nodeC)
 start(ThisNode) ->
 	{ok, Terms} = file:consult("mm_capture.settings"),
-	[{tshark, ExtPrg}, {mm_receiver, Receiver}, _] = Terms,
-	spawn(?MODULE, init, [ExtPrg, Receiver, ThisNode]).
+	[{tshark, ExtPrg}, {mm_receiver, Receiver}, {interface, Interface}, {blacklist, BlackList}, {whitelist, WhiteList}, _] = Terms,
+	% Sets up interface, blacklist, whitelist, then redirects stderr to null (prevents annoying counter text)
+	String = [ExtPrg, <<" -i ">>, Interface, <<" -f \"wlan[0] != 0x80 ">>, create_blacklist_filter(BlackList), create_whitelist_filter(WhiteList), <<"\" 2> /dev/null">> ],
+	% String is probably not flattened, but open_port wants a flat string, not iolist
+	Flattened = lists:flatten(io_lib:format("~s", [String])),
+	io:format("~s~n", [Flattened]),
+	spawn(?MODULE, init, [Flattened, Receiver, ThisNode]).
 
 %% Stop the ?MODULE
 stop() ->
@@ -33,13 +38,13 @@ loop(Port, Receiver, ThisNode) ->
 			rpc:cast(Receiver, mm_receiver, store, [{ThisNode, {list_to_bitstring(string:left(MAC, 17)), list_to_integer(SignalStrength), list_to_integer(SeqNo), mm_misc:timestamp(microsecs)}}]),
 			loop(Port, Receiver, ThisNode);
 		stop ->
-			%Port ! {self(), close},
 			erlang:port_close(Port),
-			receive
-				{Port, closed} ->
-					exit(normal)
-				end;
-			{'EXIT', Port, Reason} ->
-				io:format("~p terminated due to ~p", [Port, Reason]),
-				exit(port_terminated)
+			unregister(?MODULE),
+			ok
 	end.
+
+create_blacklist_filter(BlackList) ->
+	[[<<"and not wlan src host ">>, N, <<" ">>] || N <- BlackList].
+	
+create_whitelist_filter(WhiteList) ->
+	[[<<"and wlan src host ">>, N, <<" ">>] || N <- WhiteList].

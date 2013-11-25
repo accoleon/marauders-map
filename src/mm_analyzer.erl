@@ -65,7 +65,7 @@ write_debug(Dev, Event, Name) ->
 dump() ->
 	List = ets:tab2list(trainingdata),
 	{ok, File} = file:open("../trainingdata.txt", [write]),
-	lists:foreach(fun (T) -> io:fwrite(File, "~w,~w,~w,~w,~w,~w,~s,~s~n", [T#training.timestamp, T#training.x, T#training.y, T#training.nodeA, T#training.nodeB, T#training.nodeC, T#training.mac, T#training.name]) end, List),
+	lists:foreach(fun (T) -> io:fwrite(File, "~w,~w,~w,~w,~w,~w~n", [T#training.timestamp, T#training.x, T#training.y, T#training.nodeA, T#training.nodeB, T#training.nodeC]) end, List),
 	file:close(File).
 	
 loop(Parent, Deb, State) ->
@@ -77,7 +77,6 @@ loop(Parent, Deb, State) ->
 					trilaterate(Row#row.mac, Row#row.nodeA, Row#row.nodeATime, Row#row.nodeB, Row#row.nodeBTime, Row#row.nodeC, Row#row.nodeCTime);
 					%io:format("raw: ~p~n", [Row]),
 					%gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p,~p,~p,~p~n", [Row#row.hash, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])});
-					%gproc:send({p, l ,?WSKey}, {self(), ?WSKey, io_lib:format("~s,~s,~s,~s~n", [Row#row.hash, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])});
 				[{_MAC, Name}] -> % a trainer device
 					%io:format("~p ~p ~p~n", [State, Row, Name]),
 					train(State, Row, Name)
@@ -105,9 +104,9 @@ train(State=#state{is_training=true}, Row, Name) when State#state.trainer == Row
 	ets:insert(trainingdata, NewTraining),
 	gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("TRAINING_RECEIVED^~p,~p,~p,~p,~p,~p~n", [Name, X, Y, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])}),
 	ok;
-train(_State, _Row, _Name) ->
+train(#state{is_training=false}, _Row, _Name) ->
 	ok.
-	%gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p,~p,~p,~p~n", [Name, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])}),
+	%gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p,~p,~p,~p~n", [Name, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])}).
 	%gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p distances: ~fm ~fm ~fm~n", [Name, calculate_distance(Row#row.nodeA), calculate_distance(Row#row.nodeB), calculate_distance(Row#row.nodeC)])}).
 	
 trilaterate(MAC, R1, R1Time, R2, R2Time, R3, R3Time) ->
