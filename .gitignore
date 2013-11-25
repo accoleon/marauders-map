@@ -9,3 +9,4 @@ deps
 erl_crash.dump
 mac addresses.txt
 trainingdata.ets
+mm_capture.settings
