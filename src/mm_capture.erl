@@ -1,6 +1,6 @@
 -module(mm_capture).
 -author("Kevin Xu").
--export([start/0, stop/0, init/3]).
+-export([start/0, stop/0, exit/0, init/3]).
 % ExpPrg holds the args for calling tshark - capture filter is excluding beacons, display filter is excluding no mac addresses.
 % wlan[0] != 0x80 is to filter out beacon (Access Point) frames, -Y display filter is to only return rows with all 3 fields
 % wlan.sa: Source Mac Address wlan.seq: Sequence Number radiotap.dbm_antsignal: signal strength
@@ -20,6 +20,10 @@ start() ->
 %% Stop the ?MODULE
 stop() ->
 	?MODULE ! stop.
+
+%% Exit the ?MODULE
+exit() ->
+	?MODULE ! exit.
 	
 %% Initialize the ?MODULE
 init(ExtPrg, Receiver, ThisNode) ->
@@ -44,8 +48,10 @@ loop(Port, Receiver, ThisNode) ->
 			%io:format("~p~n", [OsPid + 1]),
 			os:cmd(io_lib:format("kill -15 ~p", [OsPid + 1])),
 			erlang:port_close(Port),
-			unregister(?MODULE),
-			ok
+			unregister(?MODULE);
+		exit ->
+			?MODULE ! stop,
+			init:stop()
 	end.
 
 create_blacklist_filter(BlackList) ->

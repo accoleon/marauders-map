@@ -3,7 +3,7 @@
 % wlan.sa: Source Mac Address wlan.seq: Sequence Number radiotap.dbm_antsignal: signal strength
 {tshark, "sudo tshark -f \"not broadcast and not multicast\" -Y \"wlan.sa && wlan.seq && radiotap.dbm_antsignal\" -I -N m -Tfields -E separator=/s -e wlan.sa -e wlan.seq -e radiotap.dbm_antsignal -l"}.
 % the address of the receiver
-{mm_receiver, 'mm@127.0.0.1'}.
+{mm_receiver, 'mm@10.111.212.152'}.
 % id of the interface to use as the capture device - use ifconfig to find out. thuc is en1, kevin is en0, etc
 {interface, <<"en0">>}.
 % blacklisted:  jason, thuc, juston, andy, kevin's laptop wifi macs - we do not want to capture any packets originating from those addresses

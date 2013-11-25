@@ -20,24 +20,21 @@ websocket_init(_TransportName, Req, _Opts) ->
 
 websocket_handle({text, Msg}, Req, State) ->
 	String = binary_to_list(Msg),
-	[Cmd, Args] = string:tokens(String, "^"),
-	case Cmd of
+	[Head|Tail] = string:tokens(String, "^"),
+	case Head of
 		"GET_TRAINERS" ->
 			List = ets:tab2list(trainers),
 			Bin = jiffy:encode({List}),
 			{reply, {text, << "TRAINERS^", Bin/bitstring>>}, Req, State};
 		"TRAINING_START" ->
-			[Trainer, X, Y] = string:tokens(Args, ","),
+			[Trainer, X, Y] = string:tokens(hd(Tail), ","),
 			mm_analyzer ! {training_start, Trainer, X , Y},
 			{reply, {text, << "TRAINING STARTED">>}, Req, State};
 		"TRAINING_END" ->
 			mm_analyzer ! {training_end},
 			{reply, {text, << "TRAINING ENDED">>}, Req, State};
-		"RUBBISH" ->
-			%io:format("Rubbish received~n"),
-			{ok, Req, State};
-		true -> % default for non-recognized text
-			{reply, {text, << "That's what she said! ", Msg/binary >>}, Req, State}
+		_ -> % default for non-recognized text
+			{ok, Req, State}
 	end;
 websocket_handle(_Data, Req, State) ->
 	{ok, Req, State}.
