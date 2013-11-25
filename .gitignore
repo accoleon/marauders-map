@@ -7,3 +7,5 @@ deps
 *.beam
 *.plt
 erl_crash.dump
+mac addresses.txt
+trainingdata.ets
