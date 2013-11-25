@@ -8,6 +8,7 @@
 -export([start_link/0, trilaterate/7, v_sum/2, calculate_distance/1, dump/0]).
 
 -define(WSKey, {pubsub, ws_broadcast}).
+-define(TIMEOUT_INTERVAL, 10000). % training timeout in milliseconds
 
 %% Assume nodes A, B, C are on a bottom left origin 100 x 100 grid
 %% A - 21, 20
@@ -86,6 +87,7 @@ loop(Parent, Deb, State) ->
 		{training_start, Trainer, X, Y} ->
 			NewState = #state{is_training=true, trainer = list_to_bitstring(Trainer), x=list_to_integer(X), y=list_to_integer(Y)},
 			io:format("Training started with ~p~n", [NewState]),
+			erlang:send_after(?TIMEOUT_INTERVAL, ?MODULE, {training_end}),
 			loop(Parent, Deb, NewState);
 		{training_end} ->
 			NewState = #state{is_training=false},

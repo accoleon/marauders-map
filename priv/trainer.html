@@ -32,7 +32,7 @@
 	var NUM_OF_TRAINING_RECEIVED = 10; // number of training_received msgs required before considered complete
 	var GARBAGE_INTERVAL = 200; // in milliseconds
     var websocket;
-	var mapArray = zero2D(ROWS, COLS);
+	var mapArray = zero2D(COLS, ROWS);
     $(document).ready(init);
 	
     function init() {
@@ -41,7 +41,7 @@
         if("WebSocket" in window){
             connect();
         };
-		
+		createButtons();
 		$('#connected').hide();
 		$('#map').hide();
     }
@@ -77,12 +77,12 @@
 	
 	function onOpen(evt) {
 		requestDropdown();
-		createButtons();
 		$('#map').show();
 	}
 	
     function onClose(evt) {
-		$('#map').hide();
+		//$('#map').hide();
+		toggleGarbage(false);
     }
 	
     function sendTxt(txt) {
@@ -130,7 +130,8 @@
 	function toggleGarbage(status) {
 		if (status == false) {
 			clearInterval(toggleGarbage.interval);
-		} else {
+		} else if (status == true) {
+			clearInterval(toggleGarbage.interval);
 			toggleGarbage.interval = setInterval(function() {
 				sendTxt('RUBBISH^' + $.now());
 			}, GARBAGE_INTERVAL);
@@ -138,7 +139,7 @@
 	}
 	
 	function onMessage(evt) {
-		//$('#log').prepend('<p>' + evt.data + '</p>');
+		//log').prepend('<p>' + evt.data + '</p>');
 		var reply = evt.data.split('^');
 		switch(reply[0]) {
 		case 'TRAINERS':
