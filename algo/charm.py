@@ -160,7 +160,7 @@ def epsilon_dist(station_infos, sigs, estimate):
     (x,y,transmit) = estimate
     coord_est = np.array((x,y))
     
-    calc_ds = distances(refs, np.array(coord_est))
+    calc_ds = distances(refs, coord_est)
     sig_ds = np.exp((transmit - sigs - ks)/20)
     penalty = penalize(transmit, 1)
     
