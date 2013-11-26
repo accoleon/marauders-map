@@ -32,7 +32,6 @@ def parse_coords(s):
 
 def main():
     parser = argparse.ArgumentParser()
-    # np.float64 parses each string into an array of float64
     parser.add_argument("-c", "--coordinates", required=True, type=parse_coords
         , help="coordinates of capture stations")
     parser.add_argument("-k", "--kconstants", nargs='*', type=np.float64
@@ -48,21 +47,20 @@ def main():
     ks = args.kconstants
     
     # Debug prints
-    print stations, ks
+    # print stations, ks
     
     # Main REPL
-    for line in stdin:
+    while True:
+        line = stdin.readline()
+        if not line: break # len(line) is 0 when EOF
+        if line == '\n': continue
+        
         words = line.split()
         id, sigs = words[0], np.float64(words[1:])
         result = locate(stations, ks, sigs)
         
         print id + " " + " ".join(map(str, result[:2]))
-        stdout.flush()
-    
-    
-# data1 imported from data1.py
-data1_solved = solve_calibrate(data1[0], data1[1], data1[2])
-data1_ks = data1_solved[0][:3] # antenna constants for data1
+        sys.stdout.flush()
 
 if __name__=="__main__":
    main()
