@@ -64,6 +64,7 @@ test() ->
 	{ok, P} = python:start([{python_path, "../algo"}]),
 	io:format("~p~n", [python:call(P, operator, add, [2, 2])]).
 	
+	
 loop(Parent, Deb, State) ->
 	receive
 		{data, Data} ->
