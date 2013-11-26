@@ -5,12 +5,12 @@
 %% OTP callbacks
 -export([init/1, system_continue/3, system_terminate/4, system_code_change/4, write_debug/3]).
 
--export([start_link/0, dump/0]).
+-export([start_link/0, dump/0, test/0]).
 
 -define(WSKey, {pubsub, ws_broadcast}).
 -define(TIMEOUT_INTERVAL, 10000). % training timeout in milliseconds
 
--record(state, {port, is_training, trainer, x, y}).
+-record(state, {python, is_training, trainer, x, y}).
 -record(training, {timestamp, mac, name, x, y, nodeA, nodeB, nodeC}).
 
 start_link() ->
@@ -34,7 +34,6 @@ init(Parent) ->
 			io:format("created new ets table since file does not exist~n")
 	end,
 	% open port to python analyzer
-	%Port = open_port({spawn, "something.py"}, [in, exit_status, stream, {line, 255}]),
 	proc_lib:init_ack(Parent, {ok, self()}),
 	State = #state{is_training=false},
 	loop(Parent, Deb, State).
@@ -43,7 +42,8 @@ system_continue(Parent, Deb, State) ->
 	loop(Parent, Deb, State).
 	
 system_terminate(Reason, _Parent, _Deb, _State) ->
-	io:format("mm_analyzer terminating~n"),
+	io:format("mm_analyzer terminating: ~p~n", [Reason]),
+	%python:stop(State#state.python),
 	ets:tab2file(trainingdata, "../trainingdata.ets"),
 	?MODULE:dump(),
 	exit(Reason).
@@ -60,15 +60,18 @@ dump() ->
 	lists:foreach(fun (T) -> io:fwrite(File, "~w,~w,~w,~w,~w,~w~n", [T#training.timestamp, T#training.x, T#training.y, T#training.nodeA, T#training.nodeB, T#training.nodeC]) end, List),
 	file:close(File).
 	
+test() ->
+	{ok, P} = python:start([{python_path, "../algo"}]),
+	io:format("~p~n", [python:call(P, operator, add, [2, 2])]).
+	
 loop(Parent, Deb, State) ->
 	receive
 		{data, Data} ->
 			Row = Data#row{},
 			case ets:lookup(trainers, Row#row.mac) of
 				[] -> % not a trainer, data to be analyzed
-					ok;
+					io:format("~p~n", [python:call(py, operator, add, [2, 2])]);
 					%erlang:port_command(State#state.port, io_lib:format("~s ~s ~s ~s ~s~n", [Row#row.mac, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])),
-					%trilaterate(Row#row.mac, Row#row.nodeA, Row#row.nodeATime, Row#row.nodeB, Row#row.nodeBTime, Row#row.nodeC, Row#row.nodeCTime);
 					%io:format("raw: ~p~n", [Row]),
 					%gproc:send({p,l,?WSKey}, {self(), ?WSKey, io_lib:format("~p,~p,~p,~p~n", [Row#row.hash, Row#row.nodeA, Row#row.nodeB, Row#row.nodeC])});
 				[{_MAC, Name}] -> % a trainer device
@@ -91,7 +94,8 @@ loop(Parent, Deb, State) ->
 			NewState = #state{is_training=false},
 			io:format("Training ended with ~p~n", [State]),
 			loop(Parent, Deb, NewState);
-		{'EXIT', _From, Reason} ->
+		{'EXIT', From, Reason} ->
+			io:format("From: ~p Reason: ~p~n", [From, Reason]),
 			system_terminate(Reason, Parent, Deb, undefined);
 		{system, From, Request} ->
 			sys:handle_system_msg(Request, From, Parent, ?MODULE, Deb, undefined)
