@@ -1,0 +1,22 @@
+
+
+Command:
+tshark -f "wlan[0] != 0x80" -Y "wlan.sa && wlan.seq && radiotap.dbm_antsignal" -I -N m -T fields -E separator=/s -e wlan.sa -e wlan.seq -e radiotap.dbm_antsignal -l 2> /dev/null 
+
+Flags explained:
+-f                  capture filter
+-Y                  display filter
+-I                  monitor mode (capture all encountered packets)
+-N m                resolve MAC address
+-T fields           output format: values of fields, chosen by -e
+-E separator=/s     space separator for output
+-e wlan.sa -e wlan.seq -e radiotap.dbm_antsignal   add fields to display
+-l                  flush stdout after printing each line, instead of waiting for buffer to fill
+
+2> /dev/null        only necessary when running in interactive shell. Remove "Capturing" and packet count messages by redirecting stderr to /dev/null
+
+
+Reference:
+http://www.wireshark.org/docs/man-pages/tshark.html
+tshark implements privilege separation for non-root capture on UNIX.
+http://wiki.wireshark.org/CaptureSetup/CapturePrivileges
