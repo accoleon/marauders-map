@@ -33,14 +33,12 @@ def dist(a, b):
     
 def distances(refs, pt, dtype=np.float64):
     # return asarray([dist(ref, pt) for ref in refs])
-    return np.fromiter( imap(partial(dist, pt), refs), dtype=dtype, count=refs.shape[0] )
+    return np.fromiter( imap(partial(dist, pt), refs), dtype=dtype, count=len(refs) )
 
 # map_distances = np.vectorize(distances, excluded=['refs'])
 def map_distances(refs, pts, dtype=np.float64):
-    # return np.fromiter( imap(partial(distances, refs), pts), dtype=dtype, count=refs.shape[0]*pts.shape[0])
-
     # order in list comp is important: for each point, iterate over refs
-    return np.fromiter( (dist(ref, pt) for pt in pts for ref in refs), dtype=dtype )#, count=refs.shape[0]*pts.shape[0])
+    return np.fromiter( (dist(ref, pt) for pt in pts for ref in refs), dtype=dtype, count=len(refs)*len(pts))
     # return [imap(partial(distances, refs), pts)]
     # return asarray([distances(refs, pt)])
 
@@ -179,8 +177,8 @@ def solve_calibrate(stations, pts, sigs):
     pts - coordinates of calibration points
     sigs - signal strengths for each calibration point, in order by station
     """
-    n = stations.shape[0]  # number of stations
-    tn = pts.shape[0]  # number of calibration points
+    n = len(stations)  # number of stations
+    tn = len(pts)  # number of calibration points
     
     a_matrix = fx_coef(n, tn)
     ds = map_distances(stations, pts)
@@ -198,7 +196,7 @@ def locate(stations, ks, sigs):
     sigs - signal strengths, in order by station
     """
     # return curve_fit(est_recv_sig, (stations, ks), sigs, p0=(1,1,-15))  # minimize: sigs - est_recv_sig(xdata, *params)
-    n = stations.shape[0]  # number of stations
+    n = len(stations)  # number of stations
     x0 = (1,1,15)  # initial estimate: coordinate, signal strength
     
-    return leastsq(partial(epsilon_dist, (stations, ks), sigs), x0=x0)
+    return leastsq(partial(epsilon_dist, (stations, ks), sigs), x0=x0)[0]
