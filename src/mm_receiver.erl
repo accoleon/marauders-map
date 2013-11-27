@@ -123,13 +123,5 @@ get_SS_field(Field) ->
 		nodeC -> #row.nodeC
 	end.
 	
-%% Get the tuple position of the record based on Field Name, returns the nodeXTime field
-get_time_field(Field) ->
-	case Field of
-		nodeA -> #row.nodeATime;
-		nodeB -> #row.nodeBTime;
-		nodeC -> #row.nodeCTime
-	end.
-	
 dump() ->
 	gen_server:cast(?MODULE, dump).
