@@ -30,8 +30,7 @@ init(ExtPrg, Receiver, ThisNode) ->
 	register(?MODULE, self()),
 	process_flag(trap_exit, true),
 	Port = open_port({spawn, ExtPrg}, [in, exit_status, stream, {line, 255}]),
-	%{os_pid, OsPid} = erlang:port_info(Port, os_pid),
-	%io:format("~p~n", [OsPid + 1]),
+	net_adm:ping(Receiver), % sets up connection to receiver
 	loop(Port, Receiver, ThisNode).
 	
 %% Main ?MODULE loop
@@ -41,7 +40,7 @@ loop(Port, Receiver, ThisNode) ->
 			{_,{_,Chunk}} = Data, % strip out unnecessary data
 			[MAC, SeqNo, SignalStrength] = string:tokens(Chunk, " "),
 			% Sends a tuple to Receiver with , MAC address (only the first 17 characters, prevent multiple MACs), SS, SeqNo, and microsecond timestamp
-			rpc:cast(Receiver, mm_receiver, store, [{ThisNode, {list_to_bitstring(string:left(MAC, 17)), list_to_integer(SignalStrength), list_to_integer(SeqNo), mm_misc:timestamp(microsecs)}}]),
+			rpc:cast(Receiver, mm_receiver, store, [{ThisNode, {list_to_bitstring(string:left(MAC, 17)), list_to_integer(SignalStrength), list_to_integer(SeqNo)}}]),
 			loop(Port, Receiver, ThisNode);
 		stop ->
 			{os_pid, OsPid} = erlang:port_info(Port, os_pid),

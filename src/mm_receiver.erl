@@ -68,14 +68,13 @@ handle_cast(stop, State) ->
 	{stop, ok, State};
 	
 %% Store handle
-handle_cast({store, {From, {MAC, SS, SeqNo, MicroTime}}}, State) ->
+handle_cast({store, {From, {MAC, SS, SeqNo}}}, State) ->
 	Hash = get_key(MAC, SeqNo),
-	PreRow = setelement(get_SS_field(From), #row{hash=Hash, mac=MAC, lastupdated=mm_misc:timestamp(secs)}, SS),
-	NewRow = setelement(get_time_field(From), PreRow, MicroTime),
+	NewRow = setelement(get_SS_field(From), #row{hash=Hash, mac=MAC, lastupdated=mm_misc:timestamp(secs)}, SS),
 	case ets:insert_new(State, NewRow) of
 		true -> do_nothing;
 		false ->
-			case ets:update_element(State, Hash, [{get_SS_field(From), SS}, {get_time_field(From), MicroTime}, {#row.lastupdated, mm_misc:timestamp(secs)}]) of
+			case ets:update_element(State, Hash, [{get_SS_field(From), SS}, {#row.lastupdated, mm_misc:timestamp(secs)}]) of
 				true ->
 					[Row] = ets:lookup(State, Hash),
 					if 

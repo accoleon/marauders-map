@@ -1,7 +1,7 @@
 % ExpPrg holds the args for calling tshark - capture filter is excluding beacons, display filter is excluding no mac addresses.
 % wlan[0] != 0x80 is to filter out beacon (Access Point) frames, -Y display filter is to only return rows with all 3 fields
 % wlan.sa: Source Mac Address wlan.seq: Sequence Number radiotap.dbm_antsignal: signal strength
-{tshark, "tshark -f \"not broadcast and not multicast\" -Y \"wlan.sa && wlan.seq && radiotap.dbm_antsignal\" -I -N m -Tfields -E separator=/s -e wlan.sa -e wlan.seq -e radiotap.dbm_antsignal -l"}.
+{tshark, "tshark -y IEEE802_11_RADIO_AVS -Y \"wlan.sa && wlan.seq && (wlan.dbm_antsignal <= -10 && wlan.dbm_antsignal >= -108)\" -I -N m -Tfields -E separator=/s -e wlan.sa -e wlan.seq -e wlan.dbm_antsignal -l"}.
 % the address of the receiver
 {mm_receiver, 'mm@10.111.212.152'}.
 % id of the interface to use as the capture device - use ifconfig to find out. thuc is en1, kevin is en0, etc
