@@ -12,6 +12,6 @@
 	gproc,
 	jiffy,
 	cowboy,
-	erlport
+	mnesia
   ]}
  ]}.
