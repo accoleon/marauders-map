@@ -78,12 +78,12 @@ var x = d3.scale.linear()
 	.range([0, width]);
 
 var y = d3.scale.linear()
-	.domain([0, 1])
+	.domain([1, 0])
 	.range([height, 0]);
 
 var xAxis = d3.svg.axis()
 	.scale(x)
-	.orient("bottom");
+	.orient("top");
 
 var yAxis = d3.svg.axis()
 	.scale(y)
@@ -104,14 +104,14 @@ var main = chart.append('g')
 	.attr('class', 'main');
 
 // Draws the axes
-// main.append("g")
-// 	.attr("class", "axis")
-// 	.attr("transform", "translate(0," + height + ")")
-// 	.call(xAxis);
+main.append("g")
+	.attr("class", "axis")
+	// .attr("transform", "translate(0," + height + ")")
+	.call(xAxis);
 
-// main.append("g")
-// 	.attr("class", "axis")
-// 	.call(yAxis);
+main.append("g")
+	.attr("class", "axis")
+	.call(yAxis);
 
 
 // Updates, adds, and removes points on the graph.
@@ -151,7 +151,8 @@ function update(data) {
 
 		//console.log(angleInDegrees);
 		//console.log("translate(" + (i.attr("x") / width) + "," + (i.attr("y") / height) + ")");
-		//i
+		console.log("rotate(" + angleInDegrees + ", " + (i.attr("x")) + ", " + (i.attr("y")) + ")");
+		i
 		//	.transition()
 		//	.duration(2000)
 		//	.attrTween("transform", function (d) {
@@ -159,19 +160,24 @@ function update(data) {
       	//		return d3.interpolateString("rotate(" + angleInDegrees + ", " + x(d.x) + ", " + y(d.y) + ")", "rotate(" + angleInDegrees + ", " + x(d.x) + ", " + y(d.y) + ")");
     //}		)
 			//.attr("transform", "rotate(angleInDegrees)")
-			//.attr("x", x(d.x)-12)
-			//.attr("y", y(d.y)-18.5);
 //			.transform()
 //			.rotate(angleInDegrees);
 //			.transition()
 //			.duration(500)
-			//.attr("transform", "rotate(" + angleInDegrees + "," + x(d.x) + ", " + y(d.y) + ") translate(0,0)")
+			// .attr("transform", "rotate(" + angleInDegrees + ")")
+			.attr("transform", "rotate(" + angleInDegrees + ", " + (i.attr("x") + 0) + ", " + (i.attr("y") + 0) + ")")
+			.attr("x", x(d.x)-12)
+			.attr("y", y(d.y)-18.5)
+			// .attr("transform", "rotate(" + angleInDegrees + ",0, 0)")
+			// .attr("transform", "rotate(" + angleInDegrees + ",0, 0)")
+			// .attr("transform", "rotate(" + angleInDegrees + "," + x(d.x) + ", " + y(d.y) + ")")
+			// .attr("transform", "rotate(" + angleInDegrees + "," + x(d.x) + ", " + y(d.y) + ") translate(0,0)")
 			//.attr("transform", "rotate(" + angleInDegrees + "," + i.attr("x") + ", " + i.attr("y") + ")")
 			//.transition()
 			//.ease("cubic-out")
 			//.duration(tranDuration)
-			//.attr("x", x(d.x))
-			//.attr("y", y(d.y));
+			// .attr("x", x(d.x))
+			// .attr("y", y(d.y));
 			//.attr("transform", "rotate(" + angleInDegrees + ")");			
 	});
 
@@ -192,13 +198,13 @@ function update(data) {
 		.attr("class", "label")
 		.style("text-anchor", "middle");
 
-	// enter.append("image")
-	// 	.attr("xlink:href", "FootSteps.png")
-	// 	.attr("width", 24)
-	// 	.attr("height", 37)
-	// 	.attr("x", function (d) {return x(d.x)-12;})
-	// 	.attr("y", function (d) {return y(d.y)-18.5;})
-	// 	.attr("class", "label");
+	enter.append("image")
+		.attr("xlink:href", "FootSteps.png")
+		.attr("width", 24)
+		.attr("height", 37)
+		// .attr("x", function (d) {return x(d.x)-12;})
+		// .attr("y", function (d) {return y(d.y)-18.5;})
+		.attr("class", "label");
 
 	// Add a fade in transition to all entering elements and child elements
 	enter.selectAll("*")
