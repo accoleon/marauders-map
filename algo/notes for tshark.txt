@@ -1,5 +1,6 @@
 
 
+# Basic
 Command:
 tshark -f "wlan[0] != 0x80" -Y "wlan.sa && wlan.seq && radiotap.dbm_antsignal" -I -N m -T fields -E separator=/s -e wlan.sa -e wlan.seq -e radiotap.dbm_antsignal -l 2> /dev/null 
 
@@ -16,7 +17,27 @@ Flags explained:
 2> /dev/null        only necessary when running in interactive shell. Remove "Capturing" and packet count messages by redirecting stderr to /dev/null
 
 
+# With blacklist
+Command:
+tshark -f "wlan[0] != 0x80 and not broadcast and not multicast and not wlan src host aa:bb:cc:dd:ee:ff" -i en0 -Y "wlan.sa && wlan.seq && radiotap.dbm_antsignal" -I -N m -T fields -E separator=/s -e wlan.sa -e wlan.seq -e radiotap.dbm_antsignal -l
+
+Flags:
+-f                  use before -i to set capture filter for all interfaces
+-i en0              capture on interface en0
+-I                  use after -i to set monitor mode for only that interface, instead of for all
+
+
 Reference:
+overview of tshark
 http://www.wireshark.org/docs/man-pages/tshark.html
+"How 802.11 Wireless Works"
+http://technet.microsoft.com/en-us/library/cc757419(v=ws.10).aspx
 tshark implements privilege separation for non-root capture on UNIX.
 http://wiki.wireshark.org/CaptureSetup/CapturePrivileges
+radiotap fields "IEEE 802.11 Radiotap Capture header"
+http://wiki.wireshark.org/CaptureSetup/WLAN#Link-Layer_.28Radio.29_packet_headers
+http://www.wireshark.org/docs/dfref/r/radiotap.html
+wlan fields "IEEE 802.11 wireless LAN"
+http://www.wireshark.org/docs/dfref/w/wlan.html
+capture filter expressions
+http://www.tcpdump.org/manpages/pcap-filter.7.txt
