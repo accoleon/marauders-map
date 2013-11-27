@@ -24,8 +24,6 @@ stop(_State) ->
 	cowboy:stop_listener(http),
 	ok.
 
--spec install(Nodes) -> ok | {error, Reason} when
-	Nodes :: 
 install(Nodes) ->
 	ok = mnesia:create_schema(Nodes),
 	rpc:multicall(Nodes, application, start, [mnesia]),
