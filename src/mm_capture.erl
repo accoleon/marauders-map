@@ -45,7 +45,7 @@ loop(Port, Receiver, ThisNode) ->
 		stop ->
 			{os_pid, OsPid} = erlang:port_info(Port, os_pid),
 			%io:format("~p~n", [OsPid + 1]),
-			os:cmd(io_lib:format("kill -15 ~p", [OsPid + 1])),
+			"" = os:cmd(io_lib:format("kill -15 ~p", [OsPid + 1])),
 			erlang:port_close(Port),
 			unregister(?MODULE);
 		exit ->

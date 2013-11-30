@@ -1,0 +1,19 @@
+table {
+	border-collapse: collapse;
+}
+table, th, td {
+   border: 1px solid black;
+   text-align: center;
+}
+td.incomplete {
+   background-color: red;
+   color: white;
+}
+td.inprogress {
+   background-color: blue;
+   color: white;
+}
+td.complete {
+   background-color: green;
+   color: black;
+}

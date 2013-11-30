@@ -1,7 +1,10 @@
-%%% @author Kevin Xu <jxu@uoregon.edu>
-%%% @copyright 2013 Team Easy
-%%% @doc Defines a receiver that listens for messages from capturenodes and prepares them for analysis
-%%% @end
+%% @author Kevin Xu <jxu@uoregon.edu>
+%% @copyright 2013 Team Easy
+%% @doc Receiver endpoint for capture nodes
+%%
+%% Defines a receiver that listens for messages from capturenodes and 
+%% prepares them for analysis
+%% @end
 -module(mm_receiver).
 -behaviour (gen_server).
 -include_lib("stdlib/include/ms_transform.hrl").
@@ -16,7 +19,14 @@
 ]).
 
 %% gen_server callbacks
--export([init/1, code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
+-export([
+	init/1,
+	code_change/3,
+	handle_call/3,
+	handle_cast/2,
+	handle_info/2,
+	terminate/2
+]).
 
 %% Interval between culling data in milliseconds
 -define(AGE_INTERVAL, 10000).
@@ -36,8 +46,6 @@ stop() ->
 	gen_server:cast(?MODULE, stop).
 	
 %% @doc Send data to the receiver
-%% @spec store(Data::tuple()) -> ok.
-%% @end
 store(Data) ->
 	gen_server:cast(?MODULE, {store, Data}).
 		
@@ -47,19 +55,19 @@ init([]) ->
 	erlang:send_after(?AGE_INTERVAL, self(), age_data),
 	{ok, ets:new(?MODULE, [set, named_table, {keypos, #row.hash}]), 0}.
 
-terminate(_Reason, _State) ->
-	io:format("mm_receiver terminating~n"),
+%% @doc gen_server callback for termination - do cleanup here
+terminate(Reason, _State) ->
+	io:format("mm_receiver terminating: ~p~n", [Reason]),
 	ok.
 	
 %% Default handle_call
 handle_call(_Req, _From, State) ->
-	{reply, ok, State}.
+	{noreply, ok, State}.
 	
 %% Dump handle
 handle_cast(dump, State) ->
 	List = ets:tab2list(?MODULE),
 	io:format("~p~n", [List]),
-	{mm_ws_handler, node()} ! {self(), {?MODULE, mm_ws_handler}, <<"Receiver called dump">>},
 	{noreply, State};
 	
 %% Stop handle
@@ -70,17 +78,23 @@ handle_cast(stop, State) ->
 %% Store handle
 handle_cast({store, {From, {MAC, SS, SeqNo}}}, State) ->
 	Hash = get_key(MAC, SeqNo),
-	NewRow = setelement(get_SS_field(From), #row{hash=Hash, mac=MAC, lastupdated=mm_misc:timestamp(secs)}, SS),
+	NewRow = setelement(get_SS_field(From), #row{hash=Hash, mac=MAC,
+		lastupdated=mm_misc:timestamp(secs)}, SS),
 	case ets:insert_new(State, NewRow) of
 		true -> do_nothing;
 		false ->
-			case ets:update_element(State, Hash, [{get_SS_field(From), SS}, {#row.lastupdated, mm_misc:timestamp(secs)}]) of
+			case ets:update_element(State, Hash, [
+				{get_SS_field(From), SS},
+				{#row.lastupdated,
+				mm_misc:timestamp(secs)}]) of
 				true ->
 					[Row] = ets:lookup(State, Hash),
 					if 
-						is_integer(Row#row.nodeA) andalso is_integer(Row#row.nodeB) andalso is_integer(Row#row.nodeC) ->
+						is_integer(Row#row.nodeA) andalso 
+						is_integer(Row#row.nodeB) andalso 
+						is_integer(Row#row.nodeC) -> % collected 3 signal strengths
 							% Send row to be analyzed
-							{mm_analyzer, node()} ! {data, Row},
+							mm_analyzer2:analyze(Row),
 							
 							% Delete the record
 							ets:delete(State, Hash);
@@ -95,7 +109,8 @@ handle_cast({store, {From, {MAC, SS, SeqNo}}}, State) ->
 %% @doc Culls data older than 10seconds
 handle_info(age_data, State) ->
 	CurrentTime = mm_misc:timestamp(secs),
-	ets:select_delete(State, ets:fun2ms(fun(#row{lastupdated=T}) when (CurrentTime - T) > 10 -> true end)),
+	ets:select_delete(State, ets:fun2ms(fun(#row{lastupdated=T}) when
+		(CurrentTime - T) > 10 -> true end)),
 	%io:format("~p rows culled due to expiry~n", [NumDeleted]),
 	erlang:send_after(?AGE_INTERVAL, self(), age_data),
 	{noreply, State};
@@ -104,7 +119,8 @@ handle_info(age_data, State) ->
 handle_info(timeout, _State) ->
 	{noreply, _State}.
 
-	
+%% @doc Code changing handler, not used.
+%% @private
 code_change(_OldVsn, _State, _Extra) ->
 	{ok, _State}.
 	

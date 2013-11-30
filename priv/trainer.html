@@ -1,180 +1,18 @@
+<!DOCTYPE html>
 <html>
 <head>
 	<title>Trainer</title>
-	<script src="/static/jquery-1.10.2.min.js"></script>
-	<script type="text/javascript" src="/static/d3.min.js"></script>
-    <style type="text/css">
-	table {
-		border-collapse: collapse;
-	}
-   table, th, td {
-	   border: 1px solid black;
-	   text-align: center;
-   }
-   td.incomplete {
-	   background-color: red;
-	   foreground-color: white;
-   }
-   td.inprogress {
-	   background-color: blue;
-	   foreground-color: white;
-   }
-   td.complete {
-	   background-color: green;
-	   foreground-color: black;
-   }
-       </style>
+	<script type="text/javascript" src="static/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript" src="static/d3.min.js"></script>
+	<script type="text/javascript" src="static/ws_events_dispatcher.js"></script>
+	<script src="static/trainer.js" type="text/javascript" async defer></script>
+    <link rel="stylesheet" href="static/trainer.css" type="text/css" media="screen" />
+	<meta charset="utf-8">
 </head>
 <body>
-	<script type="text/javascript">
-	var ROWS = 20; // y values
-	var COLS = 30; // x values
-	var NUM_OF_TRAINING_RECEIVED = 10; // number of training_received msgs required before considered complete
-	var GARBAGE_INTERVAL = 200; // in milliseconds
-    var websocket;
-	var mapArray = zero2D(COLS, ROWS);
-    $(document).ready(init);
-	
-    function init() {
-		var host = location.hostname;
-		$('#server').val('ws://' + host + ':8080/websocket'); // automatically get hostname to fill in
-        if("WebSocket" in window){
-            connect();
-        };
-		createButtons();
-		$('#connected').hide();
-		$('#map').hide();
-    }
-	
-	function zero2D(rows, cols) {
-	  var array = [], row = [];
-	  while (cols--) row.push(0);
-	  while (rows--) array.push(row.slice());
-	  return array;
-	}
-	
-    function connect()
-    {
-        wsHost = $("#server").val()
-        websocket = new WebSocket(wsHost);
-        websocket.onopen = function(evt) { onOpen(evt) }; 
-        websocket.onclose = function(evt) { onClose(evt) }; 
-        websocket.onmessage = function(evt) { onMessage(evt) }; 
-        websocket.onerror = function(evt) { onError(evt) }; 
-    }
-    
-    function disconnect() {
-        websocket.close();
-    }
-	
-    function toggle_connection(){
-        if(websocket.readyState == websocket.OPEN){
-            disconnect();
-        } else {
-            connect();
-        };
-    }
-	
-	function onOpen(evt) {
-		requestDropdown();
-		$('#map').show();
-	}
-	
-    function onClose(evt) {
-		//$('#map').hide();
-		toggleGarbage(false);
-    }
-	
-    function sendTxt(txt) {
-        if(websocket.readyState == websocket.OPEN){
-            websocket.send(txt);
-        }
-    }
-	
-	function createButtons() {
-		$('#map').empty();
-		for (var j = 0; j < ROWS; j++) {
-			$('#map').append('<tr>');
-			for (var i = 0; i < COLS; i++) {
-				var $cell = $('<td>').attr({
-					x: i,
-					y: j,
-					id: i.toString() + j.toString(),
-					status: 'incomplete',
-					'class': 'incomplete'
-				}).html(i.toString()+','+j.toString()).click(onClick);
-				$('#map tr:last-child').append($cell);
-			}
-		}
-	}
-	
-	function requestDropdown() {
-		sendTxt('GET_TRAINERS^null');
-	}
-	
-	function onClick(evt) {
-		var $cell = $(evt.target);
-		var x = $cell.attr('x');
-		var y = $cell.attr('y');
-		if ($cell.attr('status') == 'incomplete') { // not done yet, start training
-			$cell.attr({
-				status: 'inprogress',
-				'class': 'inprogress'
-			});
-			var trainer = $('#trainers').val();
-			sendTxt('TRAINING_START^' + trainer + ',' + x + ',' + y);
-			toggleGarbage(true);
-		}
-	}
-	
-	function toggleGarbage(status) {
-		if (status == false) {
-			clearInterval(toggleGarbage.interval);
-		} else if (status == true) {
-			clearInterval(toggleGarbage.interval);
-			toggleGarbage.interval = setInterval(function() {
-				sendTxt('RUBBISH^' + $.now());
-			}, GARBAGE_INTERVAL);
-		}
-	}
-	
-	function onMessage(evt) {
-		//log').prepend('<p>' + evt.data + '</p>');
-		var reply = evt.data.split('^');
-		switch(reply[0]) {
-		case 'TRAINERS':
-			var data = $.parseJSON(reply[1]);
-			var $trainers = $('#trainers');
-			$trainers.empty();
-			$.each(data, function(index, value) {
-				$trainers.append($('<option />').val(index).text(value));
-			});
-			break;
-		case 'TRAINING_RECEIVED':
-			var data = reply[1].split(',');
-			var x = data[1];
-			var y = data[2];
-			mapArray[x][y]++;
-			if (mapArray[x][y] == NUM_OF_TRAINING_RECEIVED) {
-				$('td[x=' + x + '][y=' + y + ']').attr({
-					status: 'complete',
-					'class': 'complete'
-				});
-				toggleGarbage(false);
-				sendTxt('TRAINING_END^null');
-			};
-			break;
-		default:
-		}
-	}
-	
-	
-	</script>
-	<input type='text' id="server" value="ws://localhost:8080/websocket"></input>
-	<button type="button" onclick="toggle_connection()">connection</button>
 	<select id="trainers">
 		
-	</select>
+	</select><span id="connection"></span>
 	<div  id="log"></div>
 	<table id="map">
 		

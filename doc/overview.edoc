@@ -1,0 +1,6 @@
+@author Kevin Xu <jxu@uoregon.edu>
+@copyright 2013 Team Easy
+@version 0.1
+@title Welcome to Marauder's Map!
+@doc Marauder's Map is a WiFi localization application that runs sniffs wireless
+packets.

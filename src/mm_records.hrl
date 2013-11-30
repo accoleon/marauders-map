@@ -5,7 +5,8 @@
 % lastupdated is a timestamp in seconds since 1970
 -record(row, {hash, mac, nodeA, nodeB, nodeC, lastupdated}).
 
--record(trainer, {mac, name}).
-
 %% Stored training data in mnesia database
--record (mm_training, {timestamp, mac, name, x, y, nodeA, nodeB, nodeC}).
+-record(mm_training, {timestamp, mac, name, x, y, nodeA, nodeB, nodeC}).
+
+%% Trained coordinates in mnesia database
+-record(mm_trained_coord, {coord, complete}).
