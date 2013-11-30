@@ -15,6 +15,7 @@ init({tcp, http}, _Req, _Opts) ->
 
 websocket_init(_TransportName, Req, _Opts) ->
 	gproc:reg({p, l, ?WS_KEY}),
+	erlang:start_timer(1000, self(), <<"Hello!">>),
 	{ok, Req, undefined_state}.
 
 websocket_handle({text, Msg}, Req, State) ->
@@ -58,14 +59,57 @@ websocket_handle(_Data, Req, State) ->
 websocket_info({training_received, Trainer}, Req, State) ->
 	Bin = enc(<<"training_received">>, Trainer),
 	{reply, {text, Bin}, Req, State};
-websocket_info({timeout, _Ref, Msg}, Req, State) ->
-	{reply, {text, Msg}, Req, State};
+websocket_info({pulse}, Req, State) ->
+	erlang:start_timer(1000, self(), {pulse}),
+	Bin = enc(<<"position">>, null),
+	{reply, {text, Bin}, Req, State};
+websocket_info({timeout, _Ref, _Msg}, Req, State) ->
+	erlang:start_timer(1000, self(), <<"Timeout">>),
+	Bin = enc(<<"position">>, get_test()),
+	{reply, {text, Bin}, Req, State};
 websocket_info(_Info, Req, State) ->
 	{ok, Req, State}.
 
 websocket_terminate(_Reason, _Req, _State) ->
 	gproc:unreg({p, l, ?WS_KEY}),
 	ok.
+	
+get_test() ->
+	[
+		[{l, <<"Tester">>}, {x, 0}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 1}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 2}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 3}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 4}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 5}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 6}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 7}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 8}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 9}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 10}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 11}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 12}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 13}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 14}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 15}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 16}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 17}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 18}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 19}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 20}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 19}, {y, 1}],
+		[{l, <<"Tester">>}, {x, 18}, {y, 2}],
+		[{l, <<"Tester">>}, {x, 17}, {y, 3}],
+		[{l, <<"Tester">>}, {x, 16}, {y, 4}],
+		[{l, <<"Tester">>}, {x, 15}, {y, 5}],
+		[{l, <<"Tester">>}, {x, 14}, {y, 6}],
+		[{l, <<"Tester">>}, {x, 13}, {y, 7}],
+		[{l, <<"Tester">>}, {x, 12}, {y, 8}],
+		[{l, <<"Tester">>}, {x, 11}, {y, 9}],
+		[{l, <<"Tester">>}, {x, 10}, {y, 10}],
+		[{l, <<"Tester">>}, {x, 9}, {y, 11}],
+		[{l, <<"Tester">>}, {x, 8}, {y, 12}]
+	].
 	
 %% @doc Internal wrapper function to encode erlang to json in a pseudo-RPC form
 -spec enc(Event, Data) -> Output when

@@ -1,0 +1,52 @@
+body {
+	background-image:url('map/LeatherDesk.png');
+	font-family: "Helvetica Neue", Helvetica, sans-serif;
+	margin: 0 auto 0 auto;
+	padding: 0em;
+	position: relative;
+	width: 950px;
+}
+
+p {
+    margin: 0;
+}
+
+#page {
+	height: 830px;
+	margin: 0em;
+	padding: 1em 0 1em 0;
+	background-image:url('map/OldPaper.png');
+	background-position: top center;
+}
+
+#title {
+	display: block;
+	margin: 0 auto 0 auto;
+}
+
+#chart {
+	display: block;
+	margin: 0 auto 0 auto;
+	width: 640px;
+	height: 640px;
+	background-image: url('map/lokey2d.png');
+}
+
+.axis line, .axis path {
+	stroke: black;
+	fill: none;
+}
+
+circle.point {
+	stroke: black;
+	stroke-width: 2px;
+}
+
+text.label {
+	font: 10px sans-serif;
+}
+
+.addborder {
+	stroke: black;
+	stroke-width: 2px;
+}

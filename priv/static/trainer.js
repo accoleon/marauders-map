@@ -7,7 +7,7 @@ var server;
 
 
 $(function() {
-	// automatically sets url to the server
+	// Setup WebSocket connection
 	var url = 'ws://' + location.hostname + ':8080/websocket';
 	server = new FancyWebSocket(url);
 	

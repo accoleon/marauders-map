@@ -33,7 +33,6 @@ var FancyWebSocket = function(url){
   // dispatch to the right handlers
   conn.onmessage = function(evt){
     var json = JSON.parse(evt.data);
-	console.log(json.event);
     dispatch(json.event, json.data);
   };
  
