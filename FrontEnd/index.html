@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+html {
+	background-image:url('LeatherDesk.png');
+}
+
+body {
+	font-family: "Helvetica Neue", Helvetica, sans-serif;
+	margin: 0 auto 0 auto;
+	padding: 0em;
+	position: relative;
+	width: 950px;
+}
+
+p {
+    margin: 0;
+}
+
+#page {
+	margin: 0em;
+	padding: 3em;
+	background-image:url('OldPaper.png');
+	background-position: top center;
+
+}
+
+#title {
+	display: block;
+	margin: -7em auto -5em auto;
+}
+
+.chart {
+	display: block;
+	margin: auto;
+	border: 1px solid black;
+	background-image: url('LokeyBirdeye.png');
+}
+
+.axis line, .axis path {
+	stroke: black;
+	fill: none;
+}
+
+circle.point {
+	stroke: black;
+	stroke-width: 2px;
+}
+
+text.label {
+	font: 10px sans-serif;
+}
+
+.addborder {
+	stroke: black;
+	stroke-width: 2px;
+}
+
+</style>
+<body>
+
+<div id="page">
+<img id="title" src="TheMaraudersMap.png">
+
+<script src="d3.v3.min.js"></script>
+<script>
+
+var colors = ["Navy", "Teal", "Lime", "Cyan", "ForestGreen", "Indigo"];
+
+var margin = {top: 160, right: 140, bottom: 160, left: 140},
+	width  = 640 - margin.left - margin.right,
+	height = 640 - margin.top - margin.bottom;
+
+// Setup scale based on width and height
+var x = d3.scale.linear()
+	.domain([0, 1])
+	.range([0, width]);
+
+var y = d3.scale.linear()
+	.domain([1, 0])
+	.range([height, 0]);
+
+var xAxis = d3.svg.axis()
+	.scale(x)
+	.orient("top");
+
+var yAxis = d3.svg.axis()
+	.scale(y)
+	.orient("left");
+
+// Add the SVG element to the body
+var chart = d3.select('#page').append('svg')
+		.attr('width', width + margin.right + margin.left)
+		.attr('height', height + margin.top + margin.bottom)
+		.attr('class', 'chart');
+
+// Offset the element to add the margins
+var main = chart.append('g')
+	.attr("class", "addborder")
+	.attr('transform', 'translate(130,190),rotate(-7),skewX(5)')
+	.attr('width', width)
+	.attr('height', height)
+	.attr('class', 'main');
+
+// Draws the axes
+main.append("g")
+	.attr("class", "axis")
+	// .attr("transform", "translate(0," + height + ")")
+	.call(xAxis);
+
+main.append("g")
+	.attr("class", "axis")
+	.call(yAxis);
+
+
+// Updates, adds, and removes points on the graph.
+// Data format must be an array of x,y arrays. Example: [[.3, .7], [.2, .4]]
+function update(data) {
+	var node = main.selectAll(".node")
+		.data(data);
+
+	node.each(function (d,i) {
+		console.log("------------");
+		//for(o in d) {
+		//	console.log("" + o + ": " + d[o]);
+		//}
+		var s = d3.select(this);
+		var c = s.selectAll("circle");
+		var t = s.selectAll("text");
+		var i = s.selectAll("image");
+
+		var tranDuration = lineDistance(c.attr("cx"), c.attr("cy"), x(d.x), y(d.y)) * 10;
+
+		var deltaX = x(d.x) - c.attr("cx");
+		var deltaY = y(d.y) - c.attr("cy");
+		var angleInDegrees = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
+
+		c.transition()
+			.ease("sin-out")
+			.duration(tranDuration)
+			.attr("cx", x(d.x))
+			.attr("cy", y(d.y))
+			.attr("r", 10);
+
+		t.transition()
+			.ease("sin-out")
+			.duration(tranDuration)
+			.attr("x", x(d.x))
+			.attr("y", y(d.y)+20);
+
+		//console.log(angleInDegrees);
+		//console.log("translate(" + (i.attr("x") / width) + "," + (i.attr("y") / height) + ")");
+		console.log("rotate(" + angleInDegrees + ", " + (i.attr("x")) + ", " + (i.attr("y")) + ")");
+		i
+		//	.transition()
+		//	.duration(2000)
+		//	.attrTween("transform", function (d) {
+		//		console.log(i.attr("tranform"));
+      	//		return d3.interpolateString("rotate(" + angleInDegrees + ", " + x(d.x) + ", " + y(d.y) + ")", "rotate(" + angleInDegrees + ", " + x(d.x) + ", " + y(d.y) + ")");
+    //}		)
+			//.attr("transform", "rotate(angleInDegrees)")
+//			.transform()
+//			.rotate(angleInDegrees);
+//			.transition()
+//			.duration(500)
+			// .attr("transform", "rotate(" + angleInDegrees + ")")
+			.attr("transform", "rotate(" + angleInDegrees + ", " + (i.attr("x") + 0) + ", " + (i.attr("y") + 0) + ")")
+			.attr("x", x(d.x)-12)
+			.attr("y", y(d.y)-18.5)
+			// .attr("transform", "rotate(" + angleInDegrees + ",0, 0)")
+			// .attr("transform", "rotate(" + angleInDegrees + ",0, 0)")
+			// .attr("transform", "rotate(" + angleInDegrees + "," + x(d.x) + ", " + y(d.y) + ")")
+			// .attr("transform", "rotate(" + angleInDegrees + "," + x(d.x) + ", " + y(d.y) + ") translate(0,0)")
+			//.attr("transform", "rotate(" + angleInDegrees + "," + i.attr("x") + ", " + i.attr("y") + ")")
+			//.transition()
+			//.ease("cubic-out")
+			//.duration(tranDuration)
+			// .attr("x", x(d.x))
+			// .attr("y", y(d.y));
+			//.attr("transform", "rotate(" + angleInDegrees + ")");			
+	});
+
+	var enter = node.enter().append("g")
+		.attr("class", "node")
+
+	enter.append("circle")
+		.attr("cx", function (d) {return x(d.x);})
+		.attr("cy", function (d) {return y(d.y);})
+		.attr("r", 10)
+		.style("fill", function (d) {return d.c;})
+		.attr("class", "point");
+
+	enter.append("text")
+		.text(function(d) { return d.l;})
+		.attr("x", function(d) {return x(d.x);})
+		.attr("y", function(d) {return y(d.y)+20;})
+		.attr("class", "label")
+		.style("text-anchor", "middle");
+
+	enter.append("image")
+		.attr("xlink:href", "FootSteps.png")
+		.attr("width", 24)
+		.attr("height", 37)
+		// .attr("x", function (d) {return x(d.x)-12;})
+		// .attr("y", function (d) {return y(d.y)-18.5;})
+		.attr("class", "label");
+
+	// Add a fade in transition to all entering elements and child elements
+	enter.selectAll("*")
+		.style("opacity", 0)
+		.transition()
+		.duration(300)
+		.style("opacity", 1)
+
+	// Fade out and remove all exiting elements
+	node.exit()
+		.style("opacity", 1)
+		.transition()
+		.duration(300)
+		.style("opacity", 0)
+		.remove()
+}
+
+function lineDistance(x1, y1, x2, y2) {
+	return Math.sqrt((x1 -= x2) * x1 + (y1 -= y2) * y1);
+}
+
+function randomPoint(i) {
+	var pointData = [];
+	for (var j = 0; j < i; j++) {
+		pointData.push({"x": Math.random(), "y": Math.random(), "l": "Point" + j, "c": colors[j]});
+	}
+	update(pointData);
+}
+
+</script>
+
+<div><button onclick="randomPoint(1);">1 Random Point</button></div>
+<div><button onclick="randomPoint(2);">2 Random Points</button></div>
+<div><button onclick="randomPoint(3);">3 Random Points</button></div>
+<div><button onclick="randomPoint(4);">4 Random Points</button></div>
+<div><button onclick="randomPoint(5);">5 Random Points</button></div>
+<div><button onclick="randomPoint(6);">6 Random Points</button></div>
+
+</div>

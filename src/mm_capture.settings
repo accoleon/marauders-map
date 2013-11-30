@@ -1,0 +1,8 @@
+% ExpPrg holds the args for calling tshark - capture filter is excluding beacons, display filter is excluding no mac addresses.
+% wlan[0] != 0x80 is to filter out beacon (Access Point) frames, -Y display filter is to only return rows with all 3 fields
+% wlan.sa: Source Mac Address wlan.seq: Sequence Number radiotap.dbm_antsignal: signal strength
+{tshark, "sudo tshark -i en1 -f \"wlan[0] != 0x80\" -Y \"wlan.sa && wlan.seq && radiotap.dbm_antsignal\" -I -N m -Tfields -E separator=/s -e wlan.sa -e wlan.seq -e radiotap.dbm_antsignal -l"}.
+% the address of the receiver
+{mm_receiver, 'mm@192.168.0.2'}.
+% the identifier of the capture node
+{cap, nodeA}.
