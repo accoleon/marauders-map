@@ -94,7 +94,7 @@ handle_cast({store, {From, {MAC, SS, SeqNo}}}, State) ->
 						is_integer(Row#row.nodeB) andalso 
 						is_integer(Row#row.nodeC) -> % collected 3 signal strengths
 							% Send row to be analyzed
-							mm_analyzer2:analyze(Row),
+							mm_analyzer:analyze(Row),
 							
 							% Delete the record
 							ets:delete(State, Hash);

@@ -5,7 +5,7 @@
 %% This module maintains a Python port to analyze incoming signal strengths and 
 %% output an (X, Y) location, along with training functionality to collect data 
 %% used for calibrating the Python port.
--module (mm_analyzer2).
+-module (mm_analyzer).
 -include ("mm_records.hrl").
 -include_lib("stdlib/include/qlc.hrl"). % query list comprehensions
 -behaviour (gen_server).

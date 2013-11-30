@@ -20,5 +20,5 @@ start_link() ->
 init([]) ->
 	{ok, {{one_for_one, 10, 10}, [
 		?CHILD(mm_receiver, worker),
-		?CHILD(mm_analyzer2, worker)
+		?CHILD(mm_analyzer, worker)
 	]}}.

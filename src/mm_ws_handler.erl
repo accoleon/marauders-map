@@ -21,14 +21,14 @@ websocket_handle({text, Msg}, Req, State) ->
 	[{event, Event}, {data, Data}] = jsx:decode(Msg, [{labels, attempt_atom}]),
 	case Event of
 		<<"get_trainers">> ->
-			Bin = enc(<<"trainers">>, mm_analyzer2:get_trainers()),
+			Bin = enc(<<"trainers">>, mm_analyzer:get_trainers()),
 			{reply, {text, Bin}, Req, State};
 		<<"get_trained_coords">> ->
-			Bin = enc(<<"trained_coords">>, mm_analyzer2:get_trained_coords()),
+			Bin = enc(<<"trained_coords">>, mm_analyzer:get_trained_coords()),
 			{reply, {text, Bin}, Req, State};
 		<<"start_training">> ->
 			[Trainer, X, Y] = Data,
-			case mm_analyzer2:start_training(Trainer, X, Y) of
+			case mm_analyzer:start_training(Trainer, X, Y) of
 				{training_started, TrainerLoc} ->
 					Bin = enc(<<"training_started">>, TrainerLoc),
 					{reply, {text, Bin}, Req, State};
@@ -41,7 +41,7 @@ websocket_handle({text, Msg}, Req, State) ->
 			end;
 		<<"end_training">> ->
 			[Trainer, X, Y] = Data,
-			case mm_analyzer2:end_training(Trainer, X, Y) of
+			case mm_analyzer:end_training(Trainer, X, Y) of
 				{training_ended, TrainerLoc} ->
 					Bin = enc(<<"training_ended">>, TrainerLoc),
 					{reply, {text, Bin}, Req, State};

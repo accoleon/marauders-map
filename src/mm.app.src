@@ -5,7 +5,7 @@
   {modules, []},
   {mod, { mm_app, []}},
   {env, []},
-  {registered, [mm_analyzer2, mm_receiver, mm_sup]},
+  {registered, [mm_analyzer, mm_receiver, mm_sup]},
   {applications, [
   	kernel,
 	stdlib,
