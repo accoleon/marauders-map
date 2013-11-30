@@ -9,6 +9,6 @@
 % blacklisted:  jason, thuc, juston, andy, kevin's laptop wifi macs - we do not want to capture any packets originating from those addresses
 {blacklist, [<<"e4:ce:8f:37:48:d4">>, <<"28:cf:da:df:ef:00">>, <<"dc:a9:71:86:28:ef">>, <<"7c:d1:c3:f0:32:c9">>, <<"14:10:9f:e4:f5:4f">>]}.
 % whitelisted: only capture the below addresses: currently kevin's iphone
-{whitelist, [<<"b8:e8:56:b6:dd:22">>]}.
+{whitelist, []}.
 % the identifier of the capture node
 {cap, test}.
