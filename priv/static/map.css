@@ -1,52 +1,33 @@
-body {
+html {
 	background-image:url('map/LeatherDesk.png');
+	height: 100%;
+}
+body {
 	font-family: "Helvetica Neue", Helvetica, sans-serif;
-	margin: 0 auto 0 auto;
-	padding: 0em;
-	position: relative;
-	width: 950px;
-}
-
-p {
-    margin: 0;
-}
-
-#page {
-	height: 830px;
-	margin: 0em;
-	padding: 1em 0 1em 0;
 	background-image:url('map/OldPaper.png');
-	background-position: top center;
+	width: 950px;
+	min-height: 100%;
+	margin: 0 auto 0 auto;
 }
 
 #title {
 	display: block;
-	margin: 0 auto 0 auto;
+	margin: auto;
 }
 
-#chart {
+svg.lokey {
 	display: block;
-	margin: 0 auto 0 auto;
-	width: 640px;
-	height: 640px;
-	background-image: url('map/lokey2d.png');
+	margin: auto;
+	border: 1px solid black;
+	background-image: url('map/LokeyBirdeye.png');
 }
 
-.axis line, .axis path {
+g.axis line, g.axis path {
 	stroke: black;
 	fill: none;
 }
 
 circle.point {
-	stroke: black;
-	stroke-width: 2px;
-}
-
-text.label {
-	font: 10px sans-serif;
-}
-
-.addborder {
 	stroke: black;
 	stroke-width: 2px;
 }
