@@ -30,4 +30,4 @@ def main():
         print data1[1][i], locate_data1(data1[2][i])
 
 if __name__=="__main__":
-   main()
+    main()

@@ -9,7 +9,6 @@ from numpy import linalg as LA
 # For Python coding style guidelines, see PEP 8: http://www.python.org/dev/peps/pep-0008/
 # Docstring conventions: http://www.python.org/dev/peps/pep-0257/
 
-from scipy.sparse import *
 from scipy import io
 from scipy.optimize import curve_fit, leastsq
 
@@ -19,8 +18,6 @@ from functools import partial
 from math import *
 
 import sys
-
-from data1 import data1
 
 
 # ===================
@@ -197,6 +194,6 @@ def locate(stations, ks, sigs):
     """
     # return curve_fit(est_recv_sig, (stations, ks), sigs, p0=(1,1,-15))  # minimize: sigs - est_recv_sig(xdata, *params)
     n = len(stations)  # number of stations
-    x0 = (1,1,15)  # initial estimate: coordinate, signal strength
+    x0 = (1,1,15)  # initial estimate: x, y, signal strength
     
     return leastsq(partial(epsilon_dist, (stations, ks), sigs), x0=x0)[0]
