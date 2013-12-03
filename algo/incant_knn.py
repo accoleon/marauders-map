@@ -48,10 +48,10 @@ def main():
         if line == '\n': continue
         
         words = line.split()
-        id, sigs = words[0], np.float64(words[1:])
+        ident, sigs = words[0], np.float64(words[1:])
         result = locate(locator, sigs)
         
-        print id + ' ' + ' '.join(map(str, result))
+        print ident + ' ' + ' '.join(map(str, result))
         stdout.flush()
 
 if __name__=="__main__":
