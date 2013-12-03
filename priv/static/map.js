@@ -13,7 +13,7 @@ MM.height = 640;
 // Setups scale based on width and height
 MM.x = d3.scale.linear()
 	.domain([0, 29])
-	.range([0, 290])
+	.range([290, 0])
 	.clamp(true);
 
 MM.y = d3.scale.linear()
@@ -24,11 +24,11 @@ MM.y = d3.scale.linear()
 MM.xAxis = d3.svg.axis()
 	.scale(MM.x)
 	.ticks(15)
-	.orient("top");
+	.orient("left");
 
 MM.yAxis = d3.svg.axis()
 	.scale(MM.y)
-	.orient("left");
+	.orient("bottom");
 	
 // Add the SVG element to the body
 MM.canvas = d3.select('#canvas').append('svg')
@@ -37,7 +37,7 @@ MM.canvas = d3.select('#canvas').append('svg')
 	.attr('class', 'lokey');
 	
 MM.main = MM.canvas.append('g')
-	.attr('transform', 'translate(165,180),rotate(-7.5),skewX(7),skewY(-3)')
+	.attr('transform', 'translate(120,190),rotate(-5),skewX(7),skewY(-3)')
 	.attr('width', 290)
 	.attr('height', 290)
 	.attr('class', 'main');
@@ -49,6 +49,7 @@ MM.main.append("g")
 
 MM.main.append("g")
 	.attr("class", "axis")
+	.attr("transform", "translate(0, 290)")
 	.call(MM.yAxis);
 
 // Updates, adds, and removes points on the graph.
@@ -64,8 +65,8 @@ MM.update = function(data) {
 	// 1. exit
 	var exitTransition = d3.transition().each(function() {
 		node.exit()
-			.transition()
-			.style("opacity", 0)
+			//.transition()
+			//.style("opacity", 0)
 			.remove();
 	});
 	
