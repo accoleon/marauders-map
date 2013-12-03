@@ -40,7 +40,7 @@ exit() ->
 init(ExtPrg, Receiver, ThisNode) ->
 	register(?MODULE, self()),
 	process_flag(trap_exit, true),
-	Port = open_port({spawn, ExtPrg}, [in, exit_status, stream, {line, 255}]),
+	Port = open_port({spawn, ExtPrg}, [exit_status, stream, {line, 255}]),
 	net_adm:ping(Receiver), % sets up connection to receiver
 	loop(Port, Receiver, ThisNode).
 	

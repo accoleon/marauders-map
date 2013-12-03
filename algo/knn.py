@@ -32,7 +32,7 @@ def locate(locator, sigs):
         locator: a locator created using ``create_locator``
         sigs: array of signal strengths
     '''
-    est = locator.predict(sigs)
+    est = locator.predict(sigs) # normalize_add(sigs))
     return est.flatten()
     
 # ======================
@@ -64,8 +64,7 @@ def normalize_add(sigs, target=-50):
     '''
     Adjust each signal tuple by adding a number so that the maximum signal strengths are the same
     '''
-    # return sigs + (target - np.max(sigs, axis=sigs.ndim-1).reshape(-1,1))
-    return sigs
+    return sigs + (target - np.max(sigs, axis=sigs.ndim-1).reshape(-1,1))
 
 
 # Testing code

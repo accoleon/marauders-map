@@ -1,77 +1,158 @@
-var server;
-var chart;
+var MM = {};
 
 var colors = ["Navy", "Teal", "Lime", "Cyan", "ForestGreen", "Indigo"];
+
+MM.pointData = {};
 
 // var margin = {top: 160, right: 140, bottom: 160, left: 140},
 // 	width  = 640 - margin.left - margin.right,
 // 	height = 640 - margin.top - margin.bottom;
-var width = 640;
-var height = 640;
+MM.width = 640;
+MM.height = 640;
 
 // Setups scale based on width and height
-var x = d3.scale.linear()
-	.domain([0, 20])
-	.range([0, 300]);
+MM.x = d3.scale.linear()
+	.domain([0, 29])
+	.range([0, 290])
+	.clamp(true);
 
-var y = d3.scale.linear()
-	.domain([30, 0])
-	.range([0, 290]);
+MM.y = d3.scale.linear()
+	.domain([0, 19])
+	.range([0, 290])
+	.clamp(true);
 
-var xAxis = d3.svg.axis()
-	.scale(x)
+MM.xAxis = d3.svg.axis()
+	.scale(MM.x)
+	.ticks(15)
 	.orient("top");
 
-var yAxis = d3.svg.axis()
-	.scale(y)
+MM.yAxis = d3.svg.axis()
+	.scale(MM.y)
 	.orient("left");
 	
 // Add the SVG element to the body
-var $canvas = d3.select('#canvas').append('svg')
-	.attr('width', width)
-	.attr('height', height)
+MM.canvas = d3.select('#canvas').append('svg')
+	.attr('width', MM.width)
+	.attr('height', MM.height)
 	.attr('class', 'lokey');
 	
-var $main = $canvas.append('g')
-	.attr('transform', 'translate(128,190),rotate(-5),skewX(7),skewY(-3)')
-	.attr('width', width)
-	.attr('height', height)
+MM.main = MM.canvas.append('g')
+	.attr('transform', 'translate(165,180),rotate(-7.5),skewX(7),skewY(-3)')
+	.attr('width', 290)
+	.attr('height', 290)
 	.attr('class', 'main');
 
 // Draws the axes
-$main.append("g")
+MM.main.append("g")
 	.attr("class", "axis")
-	.call(xAxis);
+	.call(MM.xAxis);
 
-$main.append("g")
+MM.main.append("g")
 	.attr("class", "axis")
-	.call(yAxis);
-
-// When DOM ready
-$(function() {
-	// Setup WebSocket connection
-	var host = location.hostname;
-	if (host == '') {
-		host = 'localhost'
-	}
-	var url = 'ws://' + host + ':8080/websocket';
-	server = new FancyWebSocket(url);
-	
-	
-	// Binds a function to the "position" event from server
-	// Called whenever the server returns a position of a device
-	var i = 0;
-	server.bind('position', function(position) {
-		console.log(position);
-		update(position);
-	});
-});
+	.call(MM.yAxis);
 
 // Updates, adds, and removes points on the graph.
 // Data format must be an array of x,y arrays. Example: [[.3, .7], [.2, .4]]
-function update(data) {
-	var node = $main.selectAll(".node")
-		.data(data);
+MM.update = function(data) {
+	// Data Join
+	var node = MM.main.selectAll(".node").data(d3.values(data), function(d) {
+		return d.i;
+	});
+	
+	var old = node.selectAll("image");
+	
+	// 1. exit
+	var exitTransition = d3.transition().each(function() {
+		node.exit()
+			.transition()
+			.style("opacity", 0)
+			.remove();
+	});
+	
+	// 2. update
+	var updateTransition = exitTransition.transition().each(function() {
+		node.transition()
+		.attr("transform", function(d) {
+			return "translate("+(MM.x(d.x) - old.attr("cx"))+","+(MM.y(d.y) - old.attr("cy"))+")";
+		});
+	});
+	
+	// 3. enter
+	var enterTransition = updateTransition.transition().each(function() {
+		var enter = node.enter().append("g")
+			.attr("class", "node");
+	
+		enter.append("circle")
+			.attr("cx", function (d) {return MM.x(d.x);})
+			.attr("cy", function (d) {return MM.y(d.y);})
+			.attr("r", 1)
+			.style("fill", "none")
+			.attr("class", "point");
+		
+		enter.append("svg:image")
+			.attr("x", function(d) { return MM.x(d.x) -12; })
+			.attr("y", function(d) { return MM.y(d.y) -12; })
+			.attr("cx", function (d) {return MM.x(d.x);})
+			.attr("cy", function (d) {return MM.y(d.y);})
+			.attr("xlink:href","static/map/footprint.svg")
+			.attr("height", 24)
+			.attr("width", 24)
+			.attr("rotation", 0);
+
+		enter.append("text")
+			.text(function(d) { return d.name; })
+			.attr("x", function(d) {return MM.x(d.x);})
+			.attr("y", function(d) {return MM.y(d.y)+25;})
+			.attr("class", "label")
+			.style("text-anchor", "middle");
+		
+		enter.selectAll("*")
+			.style("opacity", 1e-6)
+			.transition()
+			.style("opacity", 1);
+	});
+	// Update
+	/*old
+		.attr("transform", function(d) {
+				//return "rotate("+i.attr("rotation")+","+(x(d.x))+","+(y(d.y))+")", "rotate("+angle+","+(x(d.x))+","+(y(d.y))+")";
+				var deltaX = MM.x(d.x) - old.attr("cx");
+				var deltaY = MM.y(d.y) - old.attr("cy");
+				var angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI+90;
+				return "rotate("+d3.select(this).attr("rotation")+","+(MM.x(d.x))+","+(MM.y(d.y))+")", "rotate("+angle+","+(MM.x(d.x))+","+(MM.y(d.y))+")";
+		});*/
+
+	
+	/*node.selectAll("circle")
+		.attr("cx", function(d) { return MM.x(d.value.x); })
+		.attr("cy", function(d) { return MM.y(d.value.y); });
+		
+	node.selectAll("image")
+		.attr("x", function(d) { return MM.x(d.value.x) - 12; })
+		.attr("y", function(d) { return MM.y(d.value.y) - 12; });
+		
+	node.selectAll("text")
+		.text("updated")
+		.attr("x", function(d) { return MM.x(d.value.x); })
+		.attr("y", function(d) { return MM.y(d.value.y)+25; });*/
+	// Enter
+	
+		
+	
+	// Enter + Update
+	//node.transition()
+	//	.attr("transform", function(d) {
+	//		return "translate("+(MM.x(d.x) - old.attr("cx"))+","+(MM.y(d.y) - old.attr("cy"))+")";
+	//});
+	
+	// Exit
+	//node.exit()
+	//	.remove();
+
+		
+	/*var node = MM.main.selectAll(".node")
+		.data(d3.entries(data), function(d) {
+			return d.key;
+		});
 		
 	node.each(function (d,i) {
 		var s = d3.select(this);
@@ -79,60 +160,59 @@ function update(data) {
 		var t = s.selectAll("text");
 		var i = s.selectAll("image");
 
-		var tranDuration = lineDistance(c.attr("cx"), c.attr("cy"), x(d.x), y(d.y)) * 10;
-		var deltaX = x(d.x) - c.attr("cx");
-		var deltaY = y(d.y) - c.attr("cy");
+		var tranDuration = lineDistance(c.attr("cx"), c.attr("cy"), MM.x(d.value.x), MM.y(d.value.y)) * 10;
+		var deltaX = MM.x(d.value.x) - c.attr("cx");
+		var deltaY = MM.y(d.value.y) - c.attr("cy");
 		var angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
-		console.log(angle);
 		c.transition()
 			.ease("sin-out")
 			.duration(tranDuration)
-			.attr("cx", x(d.x))
-			.attr("cy", y(d.y))
+			.attr("cx", MM.x(d.value.x))
+			.attr("cy", MM.y(d.value.y))
 			.style("opacity", 1)
 			.attr("r", 1);
 			
 		i.attr("transform", function() {
 				//return "rotate("+i.attr("rotation")+","+(x(d.x))+","+(y(d.y))+")", "rotate("+angle+","+(x(d.x))+","+(y(d.y))+")";
-				return "rotate("+i.attr("rotation")+","+(x(d.x))+","+(y(d.y))+")", "rotate("+angle+","+(x(d.x))+","+(y(d.y))+")";
+				return "rotate("+i.attr("rotation")+","+(MM.x(d.value.x))+","+(MM.y(d.value.y))+")", "rotate("+angle+","+(MM.x(d.value.x))+","+(MM.y(d.value.y))+")";
 			});
 			
 		//i.transition()
 		//	.ease("sin-out")
 		//	.duration(tranDuration)
-			i.attr("x", x(d.x) - 12)
-			.attr("y", y(d.y) - 12);
+			i.attr("x", MM.x(d.value.x) - 12)
+			.attr("y", MM.y(d.value.y) - 12);
 
 		t.transition()
 			.ease("sin-out")
 			.duration(tranDuration)
-			.attr("x", x(d.x))
+			.attr("x", MM.x(d.value.x))
 			.style("opacity", 1)
-			.attr("y", y(d.y)+20);
+			.attr("y", MM.y(d.value.y)+20);
 	});
 
 	var enter = node.enter().append("g")
 		.attr("class", "node")
 
 	enter.append("circle")
-		.attr("cx", function (d) {return x(d.x);})
-		.attr("cy", function (d) {return y(d.y);})
+		.attr("cx", function (d) {return MM.x(d.value.x);})
+		.attr("cy", function (d) {return MM.y(d.value.y);})
 		.attr("r", 1)
-		.style("fill", function (d) {return d.c;})
+		.style("fill", "black")
 		.attr("class", "point");
 		
 	enter.append("image")
-		.attr("x", function(d) { return x(d.x) -12; })
-		.attr("y", function(d) { return y(d.y) -12; })
+		.attr("x", function(d) { return MM.x(d.value.x) -12; })
+		.attr("y", function(d) { return MM.y(d.value.y) -12; })
 		.attr("xlink:href","static/map/footprint.svg")
 		.attr("height", 24)
 		.attr("width", 24)
 		.attr("rotation", 0);
 
 	enter.append("text")
-		.text(function(d) { return d.l;})
-		.attr("x", function(d) {return x(d.x);})
-		.attr("y", function(d) {return y(d.y)+25;})
+		.text(function(d) { return d.value.l; })
+		.attr("x", function(d) {return MM.x(d.value.x);})
+		.attr("y", function(d) {return MM.y(d.value.y)+25;})
 		.attr("class", "label")
 		.style("text-anchor", "middle");
 
@@ -151,8 +231,8 @@ function update(data) {
 		.transition()
 		.duration(300)
 		.style("opacity", 0)
-		.remove()
-}
+		.remove()*/
+};
 
 function lineDistance(x1, y1, x2, y2) {
 	var d1 = x1 - x2;
@@ -167,3 +247,36 @@ function randomPoint(i) {
 	}
 	update(pointData);
 }
+
+// When DOM ready
+$(function() {
+	// Setup WebSocket connection
+	var host = location.hostname;
+	if (host == '') {
+		host = 'localhost'
+	}
+	var url = 'ws://' + host + ':8080/websocket';
+	MM.server = new FancyWebSocket(url);
+	
+	
+	// Binds a function to the "position" event from server
+	// Called whenever the server returns a position of a device
+	MM.server.bind('position', function(position) {
+		position[0].time = ~~(Date.now() / 1000);
+		MM.pointData[position[0].i] = position[0];
+	});
+	
+	setInterval(function() {
+		//var temp = [];
+		for (var key in MM.pointData) {
+			if (MM.pointData.hasOwnProperty(key) && ((Date.now() / 1000) - MM.pointData[key].time > 10)) {
+				delete MM.pointData[key];
+			}
+		}
+		// Keep only most recent 10 points
+		//if (temp.length > 15) temp.splice(0, temp.length - 15);
+		//MM.pointData = {};
+		MM.update(MM.pointData);
+	}, 15);
+});
+

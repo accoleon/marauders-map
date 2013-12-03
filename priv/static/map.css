@@ -31,3 +31,9 @@ circle.point {
 	stroke: black;
 	stroke-width: 2px;
 }
+text.label {
+	fill: white;
+	stroke: black;
+	    stroke-width: 0.2px;
+	    opacity: 0.9;
+}

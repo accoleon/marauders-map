@@ -106,9 +106,18 @@ handle_info({'EXIT', _From, _Reason}, _State) ->
 	{noreply, #state{}};
 %% @doc handle python port messages
 handle_info({_Port, {data, {eol, Msg}}}, _State) ->
-	[ID, X, Y] = string:tokens(Msg, " "),
+	io:format("python returned: ~p~n", [Msg]),
+	[MAC, X, Y] = string:tokens(Msg, " "),
+	{DeviceType, DeviceName} = case lists:keyfind(list_to_bitstring(MAC), 1, get_trainers()) of
+		{_, Trainer} ->
+			{<<"trainer">>, Trainer};
+		false ->
+			{<<"general">>, null}
+	end,
 	gproc:send({p, l, ?WS_KEY}, {position, [
-		{l, list_to_bitstring(ID)},
+		{i, erlang:phash2(MAC)},
+		{label, DeviceType},
+		{name, DeviceName},
 		{x, list_to_float(X)},
 		{y, list_to_float(Y)}]}),
 	{noreply, _State};
@@ -122,7 +131,6 @@ handle_info(_Req, _State) ->
 handle_cast({analyze, Row}, #state{python=PythonPort} = State) ->
 	case ets:lookup(trainers, Row#row.mac) of
 		[] -> % not a trainer or currently not training, data to be analyzed
-			io:format("mac: ~s~n", [Row#row.mac]),
 			port_command(PythonPort, io_lib:format("~s ~w ~w ~w~n", [
 				Row#row.mac,
 				Row#row.nodeA,
@@ -217,12 +225,12 @@ analyze(Row) when is_record(Row, row) ->
 %% @doc Tests the Analyze function with a dummy row
 -spec analyze_test() -> ok.
 analyze_test() ->
-	Row = #row{hash= "234234242", mac= <<"12345678">>, nodeA=-56, nodeB=-72, nodeC=-68},
+	Row = #row{hash= 234234242, mac= <<"12345678">>, nodeA=-56, nodeB=-72, nodeC=-68},
 	gen_server:cast(?MODULE, {analyze, Row}).
 	
 test_list() ->
 	[
-		#row{hash= "234234242", mac= <<"12345678">>, nodeA=-56, nodeB=-72, nodeC=-68}
+		#row{hash= 234234242, mac= <<"12345678">>, nodeA=-56, nodeB=-72, nodeC=-68}
 	].
 	
 %% @doc helper function to train a packet to a trainer
