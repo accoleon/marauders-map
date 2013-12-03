@@ -13,7 +13,7 @@ from ast import literal_eval
 import argparse
 from sys import stdin, stdout
 
-from charm import *
+from trilaterate import *
 
 # calibrate: stations, pts, sigs -> ks
 # locate: stations, ks, sigs -> (x,y)
@@ -55,10 +55,10 @@ def main():
         if line == '\n': continue
         
         words = line.split()
-        id, sigs = words[0], np.float64(words[1:])
+        ident, sigs = words[0], np.float64(words[1:])
         result = locate(stations, ks, sigs)
         
-        print id + " " + " ".join(map(str, result[:2]))
+        print ident + " " + " ".join(map(str, result[:2]))
         sys.stdout.flush()
 
 if __name__=="__main__":
