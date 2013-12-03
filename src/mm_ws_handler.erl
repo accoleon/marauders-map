@@ -15,7 +15,7 @@ init({tcp, http}, _Req, _Opts) ->
 
 websocket_init(_TransportName, Req, _Opts) ->
 	gproc:reg({p, l, ?WS_KEY}),
-	erlang:start_timer(1000, self(), <<"Hello!">>),
+	erlang:send_after(1000, self(), {iterate, 1}),
 	{ok, Req, undefined_state}.
 
 websocket_handle({text, Msg}, Req, State) ->
@@ -56,59 +56,100 @@ websocket_handle({text, Msg}, Req, State) ->
 websocket_handle(_Data, Req, State) ->
 	{ok, Req, State}.
 
+%% @doc Handles position data from mm_analyzer
+websocket_info({position, Position}, Req, State) ->
+	Bin = enc(<<"position">>, [Position]),
+	{reply, {text, Bin}, Req, State};
+%% @doc Handles training data from mm_analyzer
 websocket_info({training_received, Trainer}, Req, State) ->
 	Bin = enc(<<"training_received">>, Trainer),
 	{reply, {text, Bin}, Req, State};
-websocket_info({pulse}, Req, State) ->
-	erlang:start_timer(1000, self(), {pulse}),
-	Bin = enc(<<"position">>, null),
+%% @doc Sends static test data to the client, 2 rows at a time
+websocket_info({iterate, Position}, Req, State) when Position =< 66 ->
+	erlang:send_after(1000, self(), {iterate, Position + 2}),
+	Bin = enc(<<"position">>, [lists:nth(Position, get_test()), lists:nth(Position + 1, get_test())]),
 	{reply, {text, Bin}, Req, State};
-websocket_info({timeout, _Ref, _Msg}, Req, State) ->
-	erlang:start_timer(1000, self(), <<"Timeout">>),
-	Bin = enc(<<"position">>, get_test()),
-	{reply, {text, Bin}, Req, State};
+websocket_info({iterate, _Position}, Req, State) ->
+	erlang:send(self(), {iterate, 1}),
+	{ok, Req, State};
+%% @doc Default info handler - does nothing
 websocket_info(_Info, Req, State) ->
 	{ok, Req, State}.
 
+%% @doc Called when the WebSocket connection is ended
 websocket_terminate(_Reason, _Req, _State) ->
 	gproc:unreg({p, l, ?WS_KEY}),
 	ok.
-	
+
+%% @doc Contains static test data	
 get_test() ->
 	[
 		[{l, <<"Tester">>}, {x, 0}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 20}, {y, 30}],
 		[{l, <<"Tester">>}, {x, 1}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 19}, {y, 29}],
 		[{l, <<"Tester">>}, {x, 2}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 18}, {y, 28}],
 		[{l, <<"Tester">>}, {x, 3}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 17}, {y, 27}],
 		[{l, <<"Tester">>}, {x, 4}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 16}, {y, 26}],
 		[{l, <<"Tester">>}, {x, 5}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 15}, {y, 25}],
 		[{l, <<"Tester">>}, {x, 6}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 14}, {y, 24}],
 		[{l, <<"Tester">>}, {x, 7}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 13}, {y, 23}],
 		[{l, <<"Tester">>}, {x, 8}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 12}, {y, 22}],
 		[{l, <<"Tester">>}, {x, 9}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 11}, {y, 21}],
 		[{l, <<"Tester">>}, {x, 10}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 10}, {y, 20}],
 		[{l, <<"Tester">>}, {x, 11}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 9}, {y, 19}],
 		[{l, <<"Tester">>}, {x, 12}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 8}, {y, 18}],
 		[{l, <<"Tester">>}, {x, 13}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 7}, {y, 17}],
 		[{l, <<"Tester">>}, {x, 14}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 6}, {y, 16}],
 		[{l, <<"Tester">>}, {x, 15}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 5}, {y, 15}],
 		[{l, <<"Tester">>}, {x, 16}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 4}, {y, 14}],
 		[{l, <<"Tester">>}, {x, 17}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 3}, {y, 13}],
 		[{l, <<"Tester">>}, {x, 18}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 2}, {y, 12}],
 		[{l, <<"Tester">>}, {x, 19}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 1}, {y, 11}],
 		[{l, <<"Tester">>}, {x, 20}, {y, 0}],
+		[{l, <<"Kevin">>}, {x, 0}, {y, 10}],
 		[{l, <<"Tester">>}, {x, 19}, {y, 1}],
+		[{l, <<"Kevin">>}, {x, 1}, {y, 9}],
 		[{l, <<"Tester">>}, {x, 18}, {y, 2}],
+		[{l, <<"Kevin">>}, {x, 3}, {y, 8}],
 		[{l, <<"Tester">>}, {x, 17}, {y, 3}],
+		[{l, <<"Kevin">>}, {x, 5}, {y, 7}],
 		[{l, <<"Tester">>}, {x, 16}, {y, 4}],
+		[{l, <<"Kevin">>}, {x, 7}, {y, 6}],
 		[{l, <<"Tester">>}, {x, 15}, {y, 5}],
+		[{l, <<"Kevin">>}, {x, 8}, {y, 5}],
 		[{l, <<"Tester">>}, {x, 14}, {y, 6}],
+		[{l, <<"Kevin">>}, {x, 10}, {y, 4}],
 		[{l, <<"Tester">>}, {x, 13}, {y, 7}],
+		[{l, <<"Kevin">>}, {x, 12}, {y, 3}],
 		[{l, <<"Tester">>}, {x, 12}, {y, 8}],
+		[{l, <<"Kevin">>}, {x, 14}, {y, 2}],
 		[{l, <<"Tester">>}, {x, 11}, {y, 9}],
+		[{l, <<"Kevin">>}, {x, 10}, {y, 1}],
 		[{l, <<"Tester">>}, {x, 10}, {y, 10}],
+		[{l, <<"Kevin">>}, {x, 8}, {y, 0}],
 		[{l, <<"Tester">>}, {x, 9}, {y, 11}],
-		[{l, <<"Tester">>}, {x, 8}, {y, 12}]
+		[{l, <<"Kevin">>}, {x, 14}, {y, 0}],
+		[{l, <<"Tester">>}, {x, 8}, {y, 12}],
+		[{l, <<"Kevin">>}, {x, 15}, {y, 1}]
 	].
 	
 %% @doc Internal wrapper function to encode erlang to json in a pseudo-RPC form

@@ -62,11 +62,8 @@ $(function() {
 	// Called whenever the server returns a position of a device
 	var i = 0;
 	server.bind('position', function(position) {
-		
-		update([position[i++]]);
-		if (i > 32)
-			i = 0;
-		console.log(position[i]);
+		console.log(position);
+		update(position);
 	});
 });
 
@@ -80,20 +77,35 @@ function update(data) {
 		var s = d3.select(this);
 		var c = s.selectAll("circle");
 		var t = s.selectAll("text");
+		var i = s.selectAll("image");
 
 		var tranDuration = lineDistance(c.attr("cx"), c.attr("cy"), x(d.x), y(d.y)) * 10;
-
+		var deltaX = x(d.x) - c.attr("cx");
+		var deltaY = y(d.y) - c.attr("cy");
+		var angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+		console.log(angle);
 		c.transition()
 			.ease("sin-out")
 			.duration(tranDuration)
 			.attr("cx", x(d.x))
 			.attr("cy", y(d.y))
-			.attr("r", 10);
+			.style("opacity", 1)
+			.attr("r", 1);
+			
+		i.transition()
+			.ease("sin-out")
+			.duration(tranDuration)
+			.attr("x", x(d.x))
+			.attr("y", y(d.y))
+			.attrTween("transform", function() {
+				return d3.interpolateString("rotate("+i.attr("rotation")+","+x(d.x)+","+y(d.y)+")", "rotate("+angle+","+x(d.x)+","+y(d.y)+")");
+			});
 
 		t.transition()
 			.ease("sin-out")
 			.duration(tranDuration)
 			.attr("x", x(d.x))
+			.style("opacity", 1)
 			.attr("y", y(d.y)+20);
 	});
 
@@ -103,9 +115,17 @@ function update(data) {
 	enter.append("circle")
 		.attr("cx", function (d) {return x(d.x);})
 		.attr("cy", function (d) {return y(d.y);})
-		.attr("r", 10)
+		.attr("r", 1)
 		.style("fill", function (d) {return d.c;})
 		.attr("class", "point");
+		
+	enter.append("image")
+		.attr("x", function(d) { return x(d.x); })
+		.attr("y", function(d) { return y(d.y); })
+		.attr("xlink:href","static/map/footprint.svg")
+		.attr("height", 24)
+		.attr("width", 24)
+		.attr("rotation", 0);
 
 	enter.append("text")
 		.text(function(d) { return d.l;})
@@ -119,7 +139,9 @@ function update(data) {
 		.style("opacity", 0)
 		.transition()
 		.duration(300)
-		.style("opacity", 1)
+		.style("opacity", 1);
+		
+		
 
 	// Fade out and remove all exiting elements
 	node.exit()

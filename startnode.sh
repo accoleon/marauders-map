@@ -1,14 +1,13 @@
 #!/bin/bash
 
 usage() {
-	echo "usage: ./startnode.sh nodeA | nodeB | nodeC";
+	echo "usage: ./startnode.sh [-w] nodeA | nodeB | nodeC";
 }
 
 if [ $# -ne 1 ]; then
 	usage
 	exit 1
 elif [ $1 != "nodeA" ] && [ $1 != "nodeB" ] && [ $1 != "nodeC" ]; then
-	echo "./startnode.sh: illegal argument $1"
 	usage
 	exit 1
 else

@@ -53,9 +53,9 @@ stop(_State) ->
 -spec install(Nodes) -> ok when
 	Nodes :: [node()].
 install(Nodes) when is_list(Nodes) ->
-	rpc:multicall(Nodes, application, stop, [mnesia]),
+	{_,_} = rpc:multicall(Nodes, application, stop, [mnesia]),
 	ok = mnesia:create_schema(Nodes),
-	rpc:multicall(Nodes, application, start, [mnesia]),
+	{_,_} = rpc:multicall(Nodes, application, start, [mnesia]),
 	mnesia:create_table(
 		mm_training,
 		[
@@ -70,5 +70,5 @@ install(Nodes) when is_list(Nodes) ->
 			{disc_copies, Nodes},
 			{type, set}
 		]),
-	rpc:multicall(Nodes, application, stop, [mnesia]),
+	{_,_} = rpc:multicall(Nodes, application, stop, [mnesia]),
 	ok.

@@ -8,10 +8,21 @@
 %% Reads settings from ?MODULE.settings in erlang terms
 %% Starts a ?MODULE with default settings BUT with custom node location (nodeA, nodeB, nodeC)
 start() ->
-	{ok, Terms} = file:consult("mm_capture.settings"),
-	[{tshark, ExtPrg}, {mm_receiver, Receiver}, {interface, Interface}, {blacklist, BlackList}, {whitelist, WhiteList}, {cap, ThisNode}] = Terms,
+	{ok, Terms} = file:consult("mm_capture.settings"), [
+		{tshark, ExtPrg},
+		{mm_receiver, Receiver},
+		{interface, Interface},
+		{blacklist, BlackList}, 
+		{whitelist_enabled, WhiteListEnabled},
+		{whitelist, WhiteList},
+		{cap, ThisNode}] = Terms,
 	% Sets up interface, blacklist, whitelist, then redirects stderr to null (prevents annoying counter text)
-	String = [ExtPrg, <<" -i ">>, Interface, <<" -f \"wlan[0] != 0x80 ">>, create_blacklist_filter(BlackList), create_whitelist_filter(WhiteList), <<"\" 2> /dev/null">> ],
+	String = case WhiteListEnabled of
+		true ->
+			[ExtPrg, <<" -i ">>, Interface, <<" -f \"wlan[0] != 0x80 ">>, create_blacklist_filter(BlackList), create_whitelist_filter(WhiteList), <<"\" 2> /dev/null">> ];	
+		false ->
+			[ExtPrg, <<" -i ">>, Interface, <<" -f \"wlan[0] != 0x80 ">>, create_blacklist_filter(BlackList), <<"\" 2> /dev/null">> ]
+	end,
 	% String is probably not flattened, but open_port wants a flat string, not iolist
 	Flattened = lists:flatten(io_lib:format("~s", [String])),
 	io:format("~s~n", [Flattened]),

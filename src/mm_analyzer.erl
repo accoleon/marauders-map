@@ -23,13 +23,15 @@
 %% API
 -export ([
 	analyze/1,
+	analyze_test/0,
 	clear_training_data/0,
 	dump/0,
 	end_training/3,
 	get_trained_coords/0,
 	get_trainers/0,
 	start_link/0,
-	start_training/3
+	start_training/3,
+	test_list/0
 ]).
 
 %% Convenience macro to use as a key for gproc websocket broadcasts
@@ -82,9 +84,9 @@ init([]) ->
 	% table of currently training trainers
 	trainers = ets:new(trainers, [set, named_table, {keypos, #trainer.mac}]),
 	% Open port to python
-	%PyString = "python -u ../algo/incant.py -c \"(10,0) (20,3) (10,20)\" -k 35 35 35",
-	%PythonPort = open_port({spawn, PyString}, [in, exit_status, stream, {line, 255}]),
-	{ok, #state{}}.
+	PyString = "python -u ../algo/incant.py -c \"(10,0) (20,3) (10,20)\" -k 35 35 35",
+	PythonPort = open_port({spawn, PyString}, [exit_status, stream, {line, 255}]),
+	{ok, #state{python=PythonPort}}.
 
 %% @doc gen_server callback for hot code upgrading - unused
 %% @private
@@ -93,22 +95,38 @@ code_change(_OldVsn, _State, _Extra) ->
 	
 %% @doc gen_server callback for termination - do cleanup here
 %% @private
-terminate(Reason, _State) ->
+terminate(Reason, #state{python=PythonPort}=_State) ->
 	io:format("mm_analyzer terminating: ~p~n", [Reason]),
-	%port_close(PythonPort),
+	port_close(PythonPort),
 	ok.
 	
 %% @doc handle python port exiting
 %% @private
 handle_info({'EXIT', _From, _Reason}, _State) ->
-	{noreply, #state{}}.
+	{noreply, #state{}};
+%% @doc handle python port messages
+handle_info({_Port, {data, {eol, Msg}}}, _State) ->
+	[ID, X, Y] = string:tokens(Msg, " "),
+	gproc:send({p, l, ?WS_KEY}, {position, [
+		{l, list_to_bitstring(ID)},
+		{x, list_to_float(X)},
+		{y, list_to_float(Y)}]}),
+	{noreply, _State};
+handle_info(_Req, _State) ->
+	{noreply, _State}.
 	
+	
+
 %% @doc handle raw rows for analysis
 %% @private
-handle_cast({analyze, Row}, _State) ->
+handle_cast({analyze, Row}, #state{python=PythonPort} = State) ->
 	case ets:lookup(trainers, Row#row.mac) of
 		[] -> % not a trainer or currently not training, data to be analyzed
-			ok;
+			port_command(PythonPort, io_lib:format("~s ~w ~w ~w~n", [
+				Row#row.mac,
+				Row#row.nodeA,
+				Row#row.nodeB,
+				Row#row.nodeC]), [nosuspend]);
 		[Trainer] -> % a trainer packet and is currently training
 			train(Row, Trainer), % record the packet in db
 			gproc:send({p, l, ?WS_KEY}, {training_received, [
@@ -117,7 +135,7 @@ handle_cast({analyze, Row}, _State) ->
 				Trainer#trainer.y]}) % broadcast to websocket that training
 									% is received.
 	end,
-	{noreply, _State}.
+	{noreply, State}.
 	
 %% @doc call handler for start_training
 %% @private
@@ -181,8 +199,8 @@ handle_call(dump, _From, _State) ->
 %% @private
 handle_call(clear_training_data, _From, _State) ->
 	io:format("Clearing data from Mnesia tables...~n"),
-	mnesia:clear_table(mm_training),
-	mnesia:clear_table(mm_trained_coord),
+	{atomic, _} = mnesia:clear_table(mm_training),
+	{atomic, _} = mnesia:clear_table(mm_trained_coord),
 	{reply, ok, _State};
 %% @doc Default call handler for gen_server
 %% @private
@@ -194,6 +212,17 @@ handle_call(_Req, _From, State) ->
 	Row :: #row{}.
 analyze(Row) when is_record(Row, row) ->
 	gen_server:cast(?MODULE, {analyze, Row}).
+	
+%% @doc Tests the Analyze function with a dummy row
+-spec analyze_test() -> ok.
+analyze_test() ->
+	Row = #row{hash= "234234242", mac= <<"12345678">>, nodeA=-56, nodeB=-72, nodeC=-68},
+	gen_server:cast(?MODULE, {analyze, Row}).
+	
+test_list() ->
+	[
+		#row{hash= "234234242", mac= <<"12345678">>, nodeA=-56, nodeB=-72, nodeC=-68}
+	].
 	
 %% @doc helper function to train a packet to a trainer
 -spec train(Row, Trainer) -> ok when
