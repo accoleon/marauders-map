@@ -15,7 +15,7 @@ init({tcp, http}, _Req, _Opts) ->
 
 websocket_init(_TransportName, Req, _Opts) ->
 	gproc:reg({p, l, ?WS_KEY}),
-	erlang:send_after(1000, self(), {iterate, 1}),
+	%erlang:send_after(1000, self(), {iterate, 1}),
 	{ok, Req, undefined_state}.
 
 websocket_handle({text, Msg}, Req, State) ->

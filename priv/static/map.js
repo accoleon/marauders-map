@@ -16,7 +16,7 @@ var x = d3.scale.linear()
 
 var y = d3.scale.linear()
 	.domain([30, 0])
-	.range([290, 0]);
+	.range([0, 290]);
 
 var xAxis = d3.svg.axis()
 	.scale(x)
@@ -82,7 +82,7 @@ function update(data) {
 		var tranDuration = lineDistance(c.attr("cx"), c.attr("cy"), x(d.x), y(d.y)) * 10;
 		var deltaX = x(d.x) - c.attr("cx");
 		var deltaY = y(d.y) - c.attr("cy");
-		var angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+		var angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
 		console.log(angle);
 		c.transition()
 			.ease("sin-out")
@@ -92,14 +92,16 @@ function update(data) {
 			.style("opacity", 1)
 			.attr("r", 1);
 			
-		i.transition()
-			.ease("sin-out")
-			.duration(tranDuration)
-			.attr("x", x(d.x))
-			.attr("y", y(d.y))
-			.attrTween("transform", function() {
-				return d3.interpolateString("rotate("+i.attr("rotation")+","+x(d.x)+","+y(d.y)+")", "rotate("+angle+","+x(d.x)+","+y(d.y)+")");
+		i.attr("transform", function() {
+				//return "rotate("+i.attr("rotation")+","+(x(d.x))+","+(y(d.y))+")", "rotate("+angle+","+(x(d.x))+","+(y(d.y))+")";
+				return "rotate("+i.attr("rotation")+","+(x(d.x))+","+(y(d.y))+")", "rotate("+angle+","+(x(d.x))+","+(y(d.y))+")";
 			});
+			
+		//i.transition()
+		//	.ease("sin-out")
+		//	.duration(tranDuration)
+			i.attr("x", x(d.x) - 12)
+			.attr("y", y(d.y) - 12);
 
 		t.transition()
 			.ease("sin-out")
@@ -120,8 +122,8 @@ function update(data) {
 		.attr("class", "point");
 		
 	enter.append("image")
-		.attr("x", function(d) { return x(d.x); })
-		.attr("y", function(d) { return y(d.y); })
+		.attr("x", function(d) { return x(d.x) -12; })
+		.attr("y", function(d) { return y(d.y) -12; })
 		.attr("xlink:href","static/map/footprint.svg")
 		.attr("height", 24)
 		.attr("width", 24)

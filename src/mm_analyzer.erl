@@ -84,7 +84,7 @@ init([]) ->
 	% table of currently training trainers
 	trainers = ets:new(trainers, [set, named_table, {keypos, #trainer.mac}]),
 	% Open port to python
-	PyString = "python -u ../algo/incant.py -c \"(10,0) (20,3) (10,20)\" -k 35 35 35",
+	PyString = "python -u ../algo/incant_knn.py ../trainingdata.txt",
 	PythonPort = open_port({spawn, PyString}, [exit_status, stream, {line, 255}]),
 	{ok, #state{python=PythonPort}}.
 
@@ -122,6 +122,7 @@ handle_info(_Req, _State) ->
 handle_cast({analyze, Row}, #state{python=PythonPort} = State) ->
 	case ets:lookup(trainers, Row#row.mac) of
 		[] -> % not a trainer or currently not training, data to be analyzed
+			io:format("mac: ~s~n", [Row#row.mac]),
 			port_command(PythonPort, io_lib:format("~s ~w ~w ~w~n", [
 				Row#row.mac,
 				Row#row.nodeA,
