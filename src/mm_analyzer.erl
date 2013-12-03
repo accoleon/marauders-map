@@ -116,7 +116,7 @@ handle_info({_Port, {data, {eol, Msg}}}, _State) ->
 	end,
 	gproc:send({p, l, ?WS_KEY}, {position, [
 		{i, erlang:phash2(MAC)},
-		{label, DeviceType},
+		{devicetype, DeviceType},
 		{name, DeviceName},
 		{x, list_to_float(X)},
 		{y, list_to_float(Y)}]}),

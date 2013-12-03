@@ -81,7 +81,7 @@ MM.update = function(data) {
 	var enterTransition = updateTransition.transition().each(function() {
 		var enter = node.enter().append("g")
 			.attr("class", "node");
-	
+
 		enter.append("circle")
 			.attr("cx", function (d) {return MM.x(d.x);})
 			.attr("cy", function (d) {return MM.y(d.y);})
@@ -105,7 +105,31 @@ MM.update = function(data) {
 			.attr("y", function(d) {return MM.y(d.y)+25;})
 			.attr("class", "label")
 			.style("text-anchor", "middle");
+			
+		enter.append("circle")
+			.attr("cx", function (d) {return MM.x(d.x);})
+			.attr("cy", function (d) {return MM.y(d.y);})
+			.attr("r", 1)
+			.style("fill", "none")
+			.attr("class", "point");
 		
+		enter.append("svg:image")
+			.attr("x", function(d) { return MM.x(d.x) -12; })
+			.attr("y", function(d) { return MM.y(d.y) -12; })
+			.attr("cx", function (d) {return MM.x(d.x);})
+			.attr("cy", function (d) {return MM.y(d.y);})
+			.attr("xlink:href","static/map/footprint.svg")
+			.attr("height", 24)
+			.attr("width", 24)
+			.attr("rotation", 0);
+
+		enter.append("text")
+			.text(function(d) { return d.name; })
+			.attr("x", function(d) {return MM.x(d.x);})
+			.attr("y", function(d) {return MM.y(d.y)+25;})
+			.attr("class", "label")
+			.style("text-anchor", "middle");
+
 		enter.selectAll("*")
 			.style("opacity", 1e-6)
 			.transition()
