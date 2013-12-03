@@ -1,7 +1,6 @@
-# 
-# Command-line interface to multilateration
-# 2013-11-25
-# 
+'''
+Command-line interface to multilateration
+'''
 
 import numpy as np
 from numpy import linalg as LA

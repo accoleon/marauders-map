@@ -1,6 +1,6 @@
-#
-# Trilateration algorithm
-#
+'''
+Multilateration algorithm
+'''
 
 import numpy as np
 from numpy import linalg as LA
@@ -25,7 +25,7 @@ import sys
 # ===================
 
 def dist(a, b):
-    """Distance metric: Euclidean distance"""
+    '''Distance metric: Euclidean distance'''
     return LA.norm(a - b)
     
 def distances(refs, pt, dtype=np.float64):
@@ -48,14 +48,14 @@ _station_pts = [];
 
 # -- Interface
 def configure(station_pts):
-    """Specify the capture station coordinates in an ordered sequence (capture #0 at index 0)."""
+    '''Specify the capture station coordinates in an ordered sequence (capture #0 at index 0).'''
     _station_pts = station_pts
 
 def add_calibration_pt(src_pt, sig_strengths):
     return 1
 
 def calibrate(src_pt, sig_strengths):
-    """Calibrate using a known location and set of signal strengths.
+    '''Calibrate using a known location and set of signal strengths.
     
     Make sure to 'configure' before running 'calibrate'.
     
@@ -63,24 +63,24 @@ def calibrate(src_pt, sig_strengths):
     -----------------
     src_pt -- transmitter location
     sig_strengths -- ordered sequence of signal strengths measured at each capture station
-    """
+    '''
 
 def locate__(sig_strengths):
-    """Estimate a location.
+    '''Estimate a location.
     
     For this result to have any meaning, 'configure' and 'calibrate' beforehand.
     
     Keyword arguments
     -----------------
     sig_strengths -- ordered sequence of signal strengths measured at the capture stations
-    """
+    '''
     # cast to double, to prevent weird int division problems
 
 # ===================
 # = Matrix creation =
 # ===================
 def coef_matrix(n, tn):
-    """
+    '''
     n is the number of stations, tn is the number of calibration points
     
     Produce the matrix A used in the least-squares solver to solve
@@ -99,7 +99,7 @@ def coef_matrix(n, tn):
            [ 1.,  0.,  0., -0., -1.],
            [ 0.,  1.,  0., -0., -1.],
            [ 0.,  0.,  1., -0., -1.]])
-    """
+    '''
     return np.hstack(( np.tile(np.identity(n), (tn,1)), np.repeat(-1*np.identity(tn), n, axis=0) ))
 
 # FIXME: d = 0 => log(0) is error
@@ -109,7 +109,7 @@ def y_matrix(stations, pts, sigs):
     return np.transpose(-(rs + logds))
 
 def fx_coef(n, tn):
-    """
+    '''
     n is the number of stations, tn is the number of calibration points
     
     Produces the matrix used in f(x), where
@@ -123,7 +123,7 @@ def fx_coef(n, tn):
            [-1., -0., -0.,  0.,  1.],
            [-0., -1., -0.,  0.,  1.],
            [-0., -0., -1.,  0.,  1.]])
-    """
+    '''
     return np.hstack(( np.tile(-1*np.identity(n), (tn,1))
                      , np.repeat(np.identity(tn), n, axis=0)
                     ))
@@ -167,13 +167,13 @@ def epsilon_dist(station_infos, sigs, estimate):
 
 # http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.leastsq.html
 def solve_calibrate(stations, pts, sigs):
-    """
+    '''
     Finds the least-squares solutions for the station antenna gain/loss constants
     
     stations - station coordinates
     pts - coordinates of calibration points
     sigs - signal strengths for each calibration point, in order by station
-    """
+    '''
     n = len(stations)  # number of stations
     tn = len(pts)  # number of calibration points
     
@@ -185,13 +185,13 @@ def solve_calibrate(stations, pts, sigs):
     return leastsq(partial(est_k_weighted, n, a_matrix, ds, recvs), x0=x0)#[:n]
 
 def locate(stations, ks, sigs):
-    """
+    '''
     Estimate a source point's location using trilateration.
     
     stations - station coordinates
     ks - station antenna constants
     sigs - signal strengths, in order by station
-    """
+    '''
     # return curve_fit(est_recv_sig, (stations, ks), sigs, p0=(1,1,-15))  # minimize: sigs - est_recv_sig(xdata, *params)
     n = len(stations)  # number of stations
     x0 = (1,1,15)  # initial estimate: x, y, signal strength
