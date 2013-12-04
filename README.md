@@ -4,13 +4,13 @@ Marauder's Map
 Prerequisites
 -------------
 
-**Hardware Requirements**
+### Hardware Requirements 
 
 * Minimum of 3 computers (4 computers recommended)
 * Computers must have WiFi B/G/N network interface cards compatible with
 	wireshark ([recommended wireless cards](http://www.aircrack-ng.org/doku.php?id=faq#what_is_the_best_wireless_card_to_buy))
 
-**Software Requirements**
+### Software Requirements
 
 * Computers must be running updated versions of OSX 10.9 or Linux Kernel 3.5
 * [Erlang R16B02](https://www.erlang-solutions.com/downloads/download-erlang-otp) 
@@ -21,6 +21,43 @@ Prerequisites
 	to function 
 * [Git 1.7](http://git-scm.com/downloads) and above must be installed and in the
 	$PATH
+
+Installing the prerequisites
+----------------------------
+
+### OSX 10.9
+
+Installing Xcode command line developer tools:
+
+	xcode-select --install
+
+Installing Homebrew:
+
+	ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"
+
+Add the following line to your `.bashrc`:
+
+	export PATH="$(brew --prefix coreutils)/libexec/gnubin:/usr/local/bin:$PATH"
+
+Installing GNU make:
+
+	brew install make
+
+Installing GNU wget:
+
+	brew install wget
+
+### Ubuntu Linux 13.10
+
+Installing development tools:
+
+	sudo aptitude install build-essential
+
+Installing wireshark:
+
+	sudo aptitude install wireshark
+
+[Erlang Solutions Page](https://www.erlang-solutions.com/downloads/download-erlang-otp) has instructions to install Erlang R16B02 on Ubuntu
 
 Checking Out The Project
 ------------------------
