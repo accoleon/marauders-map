@@ -3,14 +3,15 @@
   {description, "Marauder's Map"},
   {vsn, "0.1"},
   {modules, []},
+  {mod, { mm_app, []}},
+  {env, []},
   {registered, [mm_analyzer, mm_receiver, mm_sup]},
   {applications, [
   	kernel,
 	stdlib,
-	crypto,
+	gproc,
 	cowboy,
-	gproc
-  ]},
-  {mod, { mm_app, []}},
-  {env, []}
+	mnesia,
+	jsx
+  ]}
  ]}.

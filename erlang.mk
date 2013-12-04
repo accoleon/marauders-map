@@ -106,7 +106,7 @@ app: ebin/$(PROJECT).app
 	$(eval MODULES := $(shell find ebin -type f -name \*.beam \
 		| sed 's/ebin\///;s/\.beam/,/' | sed '$$s/.$$//'))
 	$(appsrc_verbose) cat src/$(PROJECT).app.src \
-		| sed 's/{modules, \[\]}/{modules, \[$(MODULES)\]}/' \
+		| sed 's/{modules,\s*\[\]}/{modules, \[$(MODULES)\]}/' \
 		> ebin/$(PROJECT).app
 
 define compile_erl
@@ -179,13 +179,21 @@ deps: $(ALL_DEPS_DIRS)
 	done
 
 clean-deps:
-	@for dep in $(ALL_DEPS_DIRS) ; do $(MAKE) -C $$dep clean; done
+	@for dep in $(ALL_DEPS_DIRS) ; do \
+		if [ -f $$dep/Makefile ] ; then \
+			$(MAKE) -C $$dep clean ; \
+		else \
+			echo "include $(CURDIR)/erlang.mk" | $(MAKE) -f - -C $$dep clean ; \
+		fi ; \
+	done
 
 # Documentation.
 
+EDOC_OPTS ?=
+
 docs: clean-docs
 	$(gen_verbose) erl -noshell \
-		-eval 'edoc:application($(PROJECT), ".", []), init:stop().'
+		-eval 'edoc:application($(PROJECT), ".", [$(EDOC_OPTS)]), init:stop().'
 
 clean-docs:
 	$(gen_verbose) rm -f doc/*.css doc/*.html doc/*.png doc/edoc-info

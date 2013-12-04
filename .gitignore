@@ -1,4 +1,12 @@
-*.beam
 _rel
 ebin
+
+.eunit
 deps
+*.o
+*.beam
+*.plt
+erl_crash.dump
+mac addresses.txt
+trainingdata.ets
+src/mm_capture.settings

@@ -1,0 +1,5 @@
+%% encoding: UTF-8
+{application,mm}.
+{packages,[]}.
+{modules,[mm_analyzer,mm_app,mm_capture,mm_misc,mm_receiver,mm_sup,
+          mm_ws_handler]}.

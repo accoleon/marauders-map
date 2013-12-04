@@ -1,0 +1,39 @@
+html {
+	background-image:url('map/LeatherDesk.png');
+	height: 100%;
+}
+body {
+	font-family: "Helvetica Neue", Helvetica, sans-serif;
+	background-image:url('map/OldPaper.png');
+	width: 950px;
+	min-height: 100%;
+	margin: 0 auto 0 auto;
+}
+
+#title {
+	display: block;
+	margin: auto;
+}
+
+svg.lokey {
+	display: block;
+	margin: auto;
+	border: 1px solid black;
+	background-image: url('map/LokeyBirdeye.png');
+}
+
+g.axis line, g.axis path {
+	stroke: black;
+	fill: none;
+}
+
+circle.point {
+	stroke: black;
+	stroke-width: 2px;
+}
+text.label {
+	fill: white;
+	stroke: black;
+	    stroke-width: 0.2px;
+	    opacity: 0.9;
+}
