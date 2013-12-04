@@ -1,9 +1,9 @@
 # Software Architecture
-Project 2, Marauder's Map
-Team Easy, CIS 422, Fall 2013
+#### Project 2, Marauder's Map
+#### Team Easy, CIS 422, Fall 2013
 
 ## Architecture Goals (Required Qualities)
-Here is a brief listing as a review. See the SRS for detailed specifications.
+The brief listing here is provided as a review. See the SRS for detailed specifications.
 ### Behavioral Qualities
 * Performance - the graphical interface should run smoothly (without visible stuttering due to CPU) on recent smartphone browsers. Back-end server and capture nodes should be able to run on commodity laptops (within the last 2 years) that have compatible Wi-Fi cards.
 * Security - detected MAC addresses should not be available to end-users. Users should not be able to take control of the server.
@@ -23,11 +23,13 @@ Here is a brief listing as a review. See the SRS for detailed specifications.
 
 ### Design Rationale
 Based on the constraints and assumptions, to address the design goals, we chose to divide the program into three main modules: front-end client, back-end server/capture nodes, and back-end algorithms. Each module corresponds to a set of languages: the front-end is HTML/CSS/JS, the nodes are in Erlang, and the algorithms are in Python. Dividing the program along these lines follows logically from our constraints and assumptions:
-    1. The algorithms module is separate from the controller, and two steps removed from the client. Neither the client nor the server know anything about the algorithm implementation, which allows it to change frequently while hiding details behind a clean interface.
-    2. Each module uses its language's strengths to achieve a combined system. HTML/CSS/JS allows the front-end to meet its goals of easy usability. Erlang makes the server and capture nodes easier to write because Erlang manages node coordination and networking automatically. Python is a boon to algorithm development for its robust data analysis and machine learning libraries.
-    3. The controller can be developed by our one developer who has experience with Erlang, the algorithms by our one developer who has experience with machine learning, and the front-end by our developers that have experience with JavaScript. This allows all three components to proceed in parallel.
+
+1. The algorithms module is separate from the controller, and two steps removed from the client. Neither the client nor the server know anything about the algorithm implementation, which allows it to change frequently while hiding details behind a clean interface.
+2. Each module uses its language's strengths to achieve a combined system. HTML/CSS/JS allows the front-end to meet its goals of easy usability. Erlang makes the server and capture nodes easier to write because Erlang manages node coordination and networking automatically. Python is a boon to algorithm development for its robust data analysis and machine learning libraries.
+3. The controller can be developed by our one developer who has experience with Erlang, the algorithms by our one developer who has experience with machine learning, and the front-end by our developers that have experience with JavaScript. This allows all three components to proceed in parallel.
     
 Furthermore, this choice of modular architecture is an excellent fit for our design goals:
+
 * Performance - off-loading the processing to the server-side allows the front-end client to run smoothly on smartphones. In addition, only the server requires any measure of computing power to run the location algorithm - the capture nodes only send data and can run on weak CPUs.
 * Security - MAC addresses are handled server-side and never sent to the front-end client. Separation of data capture, data analysis, and node coordination allows future implementation of sandboxing and easy privilege separation.
 * Usability - a standards-compliant webpage GUI lets anyone start using the map right away.
@@ -43,28 +45,28 @@ Furthermore, this choice of modular architecture is an excellent fit for our des
 Starting with front-end and back-end, the program can be further divided into more detailed submodules. The front-end is small enough that it is one submodule. The back-end consists of around three submodules: server, capture nodes, and algorithms. The reasoning behind this modularization is explained above in the design rationale.
 
 #### Relations & Interfaces
-**Front-end client:**
-Services:
+##### Front-end client:
+###### Services:
 Display locations on a map for the user. These visualizations may be animated.
-Secrets:
+###### Secrets:
 The visual design and display of locations, how locations are animated, etc.
 
-**Server:**
-Services:
+##### Server:
+###### Services:
 Provide location data to front-end clients. Provide signal strengths for algorithm to analyze.
-Secrets:
+###### Secrets:
 How to communicate with capture nodes. How to prepare data for analysis and for the client.
 
-**Capture nodes:**
-Services:
+##### Capture nodes:
+###### Services:
 Provide a labeled stream of signal strength data to the server.
-Secrets:
+###### Secrets:
 How the data is captured, e.g., which program is used and with what parameters.
 
-**Algorithm:**
-Services:
+##### Algorithm:
+###### Services:
 Estimate a location when given a set of signal strengths.
-Secrets:
+###### Secrets:
 The algorithm and implementation used to perform estimation.
 
 ### Data Flow Structure
@@ -74,19 +76,20 @@ Each arrow indicates a "sends-data-to" relationship.
 The label on each arrow specifies the data type used in the interface.
 
 
-                                         *:1          1:1
-Front-end client  <---estimated locations---  Server  ----signal strengths--->  Algorithm
-                                                 ^    <--estimated locations--
-                                                 |
-                                                 signal strengths
-                                                 | 3:1
-                                              Capture
-                                               nodes
+                                             *:1          1:1
+    Front-end client  <---estimated locations---  Server  ----signal strengths--->  Algorithm
+                                                     ^    <--estimated locations--
+                                                     |
+                                                     signal strengths
+                                                     | 3:1
+                                                  Capture
+                                                   nodes
                                                
                                                
 Although the front-end client initially connects to the server to receive data, the main flow of data is as follows:
-    1. Signal strengths are recorded by the capture nodes and sent to the server
-    2. When a packet has signal strength measurements from all of the capture nodes, the server combines them into an ordered tuple and sends it to the algorithm.
-    3. The algorithm outputs an estimated location, which is read by the server.
-    4. The server pushes new locations over a persistent socket to the front-end client.
+
+1. Signal strengths are recorded by the capture nodes and sent to the server
+2. When a packet has signal strength measurements from all of the capture nodes, the server combines them into an ordered tuple and sends it to the algorithm.
+3. The algorithm outputs an estimated location, which is read by the server.
+4. The server pushes new locations over a persistent socket to the front-end client.
 
