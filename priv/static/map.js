@@ -73,44 +73,52 @@ MM.update = function(data) {
 	// 2. update
 	var updateTransition = exitTransition.transition().each(function() {
 		node.transition()
-		.attr("transform", function(d) {
+			.attr("x", function(d) {return MM.x(d.x);})
+			.attr("y", function(d) {return MM.y(d.y);});
+		/*.attr("transform", function(d) {
 			return "translate("+(MM.x(d.x) - old.attr("cx"))+","+(MM.y(d.y) - old.attr("cy"))+")";
-		});
+		});*/
 	});
 	
 	// 3. enter
 	var enterTransition = updateTransition.transition().each(function() {
-		var enter = node.enter().append("g")
-			.attr("class", "node");
+		var enter = node.enter().append("svg").attr("class", "node");
+		enter.attr("x", function(d) {return MM.x(d.x)});
+		var group = enter.append("g");
 
-		enter.append("circle")
-			.attr("cx", function (d) {return MM.x(d.x);})
-			.attr("cy", function (d) {return MM.y(d.y);})
+		group.append("circle")
+			//.attr("cx", function (d) {return MM.x(d.x);})
+			//.attr("cy", function (d) {return MM.y(d.y);})
 			.attr("r", 1)
 			.style("fill", "none")
 			.attr("class", "point");
 		
-		enter.append("svg:image")
-			.attr("x", function(d) { return MM.x(d.x) -12; })
-			.attr("y", function(d) { return MM.y(d.y) -12; })
-			.attr("cx", function (d) {return MM.x(d.x);})
-			.attr("cy", function (d) {return MM.y(d.y);})
+		group.append("svg:image")
+			//.attr("x", function(d) { return MM.x(d.x) -12; })
+			//.attr("y", function(d) { return MM.y(d.y) -12; })
+			//.attr("cx", function (d) {return MM.x(d.x);})
+			//.attr("cy", function (d) {return MM.y(d.y);})
 			.attr("xlink:href","static/map/shoeprints.png")
 			.attr("height", 24)
 			.attr("width", 24)
 			.attr("rotation", 0);
 
-		enter.append("text")
+		group.append("text")
 			.text(function(d) { return d.name; })
-			.attr("x", function(d) {return MM.x(d.x);})
-			.attr("y", function(d) {return MM.y(d.y)+25;})
+			//.attr("x", function(d) {return MM.x(d.x);})
+			//.attr("y", function(d) {return MM.y(d.y)+25;})
 			.attr("class", "label")
 			.style("text-anchor", "middle");
 
-		enter.selectAll("*")
-			.style("opacity", 1e-6)
+		group.selectAll("*")
+			.style("opacity", 0)
 			.transition()
-			.style("opacity", 1);
+			.duration(100)
+			.style("opacity", 1)
+			.transition()
+			.ease("linear")
+			.duration(2000)
+			.style("opacity", 0);
 	});
 	// Update
 	/*old
