@@ -1,6 +1,22 @@
 Marauder's Map
 ==============
 
+Introduction
+------------
+Marauder’s Map is a fun and interactive way of showing where people are in an area in realtime. When someone enters, a set of footprints appear on the map where they're standing. As they walk around, and go from place to place, the map periodically updates their location. There is no app to install or secret phrase to recite. Anyone with a smartphone or Wi-Fi device can participate in this interactive map.
+
+
+
+For an overview of the architecture and the design rationale behind Marauder's Map, take a look at the [software architecture][archdoc].
+
+For a detailed description of what makes Marauder's Map tick, check out the [technical documentation][techdoc].
+
+Adventurous administrators can try installing their own setup with the instructions below.
+
+[archdoc]: https://www.assembla.com/code/cis422f13_team3/git/nodes/master/ARCHITECTURE.md
+[techdoc]: https://www.assembla.com/code/cis422f13_team3/git/nodes/master/TECHDOC.md
+
+
 Prerequisites
 -------------
 
