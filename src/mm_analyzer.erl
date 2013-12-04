@@ -112,7 +112,7 @@ handle_info({_Port, {data, {eol, Msg}}}, _State) ->
 		{_, Trainer} ->
 			{<<"trainer">>, Trainer};
 		false ->
-			{<<"general">>, null}
+			{<<"general">>, erlang:phash2(MAC)}
 	end,
 	gproc:send({p, l, ?WS_KEY}, {position, [
 		{i, erlang:phash2(MAC)},

@@ -52,6 +52,14 @@ MM.main.append("g")
 	.attr("transform", "translate(0, 290)")
 	.call(MM.yAxis);
 
+function getX(d) {
+	return MM.y(d.y)
+}
+
+function getY(d) {
+	return MM.x(d.x)
+}
+
 // Updates, adds, and removes points on the graph.
 // Data format must be an array of x,y arrays. Example: [[.3, .7], [.2, .4]]
 MM.update = function(data) {
@@ -63,27 +71,29 @@ MM.update = function(data) {
 	var old = node.selectAll("image");
 	
 	// 1. exit
-	var exitTransition = d3.transition().each(function() {
-		node.exit()
-			//.transition()
-			//.style("opacity", 0)
-			.remove();
-	});
+	node.exit().remove()
+	// var exitTransition = d3.transition().each(function() {
+	// 	node.exit()
+	// 		//.transition()
+	// 		//.style("opacity", 0)
+	// 		.remove();
+	// });
 	
 	// 2. update
-	var updateTransition = exitTransition.transition().each(function() {
+	// var updateTransition = exitTransition.transition().each(function() {
 		node.transition()
-			.attr("x", function(d) {return MM.x(d.x);})
-			.attr("y", function(d) {return MM.y(d.y);});
+			.attr("x", function(d) {return getX(d);})
+			.attr("y", function(d) {return getY(d);})
 		/*.attr("transform", function(d) {
 			return "translate("+(MM.x(d.x) - old.attr("cx"))+","+(MM.y(d.y) - old.attr("cy"))+")";
 		});*/
-	});
+	// });
 	
 	// 3. enter
-	var enterTransition = updateTransition.transition().each(function() {
+	// var enterTransition = updateTransition.transition().each(function() {
 		var enter = node.enter().append("svg").attr("class", "node");
-		enter.attr("x", function(d) {return MM.x(d.x)});
+		enter.attr("x", function(d) {return getX(d)})
+			.attr("y", function(d) {return getY(d)});
 		var group = enter.append("g");
 
 		group.append("circle")
@@ -114,12 +124,8 @@ MM.update = function(data) {
 			.style("opacity", 0)
 			.transition()
 			.duration(100)
-			.style("opacity", 1)
-			.transition()
-			.ease("linear")
-			.duration(2000)
-			.style("opacity", 0);
-	});
+			.style("opacity", 1);
+	// });
 	// Update
 	/*old
 		.attr("transform", function(d) {
