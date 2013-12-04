@@ -3,6 +3,7 @@ Marauder's Map
 
 Prerequisites
 -------------
+
 **Hardware Requirements**
 
 * Minimum of 3 computers (4 computers recommended)
@@ -21,8 +22,17 @@ Prerequisites
 * [Git 1.7](http://git-scm.com/downloads) and above must be installed and in the
 	$PATH
 
+Checking Out The Project
+------------------------
+
+	git clone git://git.assembla.com/cis422f13_team3.maraudersmap.git
+	cd cis422f13_team3.maraudersmap
+
+You are now ready to build the project.
+
 Setting Up Your Server
 ----------------------
+
 To build the Marauder's Map server, run:
 
 	make
@@ -52,6 +62,7 @@ which will build, change the host to the detected IP address reported by
 
 Setting Up Your Capture Nodes
 -----------------------------
+
 Building and running the capture nodes is done differently from the server nodes.
 In the root of the Marauder's Map project, edit the file `mm_capture.src`:
 
@@ -69,5 +80,31 @@ After changing the settings, run the start script, where `nodeA` is whichever no
 
 This starts an erlang node with all the settings filled in correctly.
 
-FAQ/Misc.
----------------------
+FAQ
+---
+
+**`make` gives me an error!**
+
+Be sure to have `wget`, Erlang, GNU `make` installed and available in your `$PATH`.
+
+**My capture nodes are not capturing any wireless data!**
+
+Be sure to have a compatible wireless interface card that supports libpcap
+capturing in monitor mode. Read the [short guide](http://www.aircrack-ng.org/doku.php?id=faq#what_is_the_best_wireless_card_to_buy)
+to compatible wireless cards.
+
+**My capture nodes are not communicating with my server!**
+
+Be sure that your server and all your capture nodes are on the same local area
+network and subnet, and can ping each other. Check your firewall, and open port
+4369 for the Erlang Port Mapper Daemon (epmd) to communicate.
+
+**I cannot see Marauder's Map on my web browser!**
+
+Be sure that your firewall has not blocked port 8080, and that the server is 
+running without errors.
+
+**Marauder's Map looks strange/frozen on my web browser**
+
+Marauder's Map currently only supports Chrome v31 and above, Safari 7.0 and
+above.
