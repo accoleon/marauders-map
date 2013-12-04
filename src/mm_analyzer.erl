@@ -30,8 +30,7 @@
 	get_trained_coords/0,
 	get_trainers/0,
 	start_link/0,
-	start_training/3,
-	test_list/0
+	start_training/3
 ]).
 
 %% Convenience macro to use as a key for gproc websocket broadcasts
@@ -227,11 +226,6 @@ analyze(Row) when is_record(Row, row) ->
 analyze_test() ->
 	Row = #row{hash= 234234242, mac= <<"12345678">>, nodeA=-56, nodeB=-72, nodeC=-68},
 	gen_server:cast(?MODULE, {analyze, Row}).
-	
-test_list() ->
-	[
-		#row{hash= 234234242, mac= <<"12345678">>, nodeA=-56, nodeB=-72, nodeC=-68}
-	].
 	
 %% @doc helper function to train a packet to a trainer
 -spec train(Row, Trainer) -> ok when

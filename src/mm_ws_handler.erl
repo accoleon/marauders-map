@@ -1,3 +1,9 @@
+%% @author Kevin Xu <jxu@uoregon.edu>
+%% @copyright 2013 Team Easy
+%% @doc WebSocket Server
+%%
+%% This module maintains a WebSocket server which provides the backend services
+%% for Map display and Trainer tool.
 -module(mm_ws_handler).
 -behaviour(cowboy_websocket_handler).
 -include("mm_records.hrl").
@@ -10,14 +16,26 @@
 
 -define(WS_KEY, {pubsub, ws_broadcast}).
 
+%% @doc Sets up initial parameters for a WebSocket process
+
+%% Called by the cowboy router to handle WebSocket requests and upgrades the
+%% TCP connection to a WebSocket connection.
 init({tcp, http}, _Req, _Opts) ->
 	{upgrade, protocol, cowboy_websocket}.
 
+%% @doc Initializes a WebSocket process
+%%
+%% Initializes a WebSocket process and registers itself as a subscriber to
+%% gproc's pubsub service, to receive broadcasts of data from the Analyzer.
 websocket_init(_TransportName, Req, _Opts) ->
 	gproc:reg({p, l, ?WS_KEY}),
 	%erlang:send_after(1000, self(), {iterate, 1}),
 	{ok, Req, undefined_state}.
 
+%% @doc Main server handler
+%%
+%% Handles events from the frontent clients: Map and Trainer tool. Events and
+%% data are packed into JSON by the jsx library.
 websocket_handle({text, Msg}, Req, State) ->
 	[{event, Event}, {data, Data}] = jsx:decode(Msg, [{labels, attempt_atom}]),
 	case Event of
@@ -56,11 +74,18 @@ websocket_handle({text, Msg}, Req, State) ->
 websocket_handle(_Data, Req, State) ->
 	{ok, Req, State}.
 
-%% @doc Handles position data from mm_analyzer
+%% @doc Handles position data from the Analyzer
+%%
+%% Called when the Analyzer sends location data on a device. The positional data
+%% is packed into JSON and sent to the Map
 websocket_info({position, Position}, Req, State) ->
 	Bin = enc(<<"position">>, [Position]),
 	{reply, {text, Bin}, Req, State};
-%% @doc Handles training data from mm_analyzer
+%% @doc Handles training data from the Analyzer
+%%
+%% Called when the Analyzer sends an acknowledgement that it has successfully
+%% received a packet of data from the Trainer tool. Acknowledgement of the 
+%% location of the packet is packed into JSON and sent to the Trainer tool.
 websocket_info({training_received, Trainer}, Req, State) ->
 	Bin = enc(<<"training_received">>, Trainer),
 	{reply, {text, Bin}, Req, State};
@@ -77,11 +102,16 @@ websocket_info(_Info, Req, State) ->
 	{ok, Req, State}.
 
 %% @doc Called when the WebSocket connection is ended
+%%
+%% Unsubscribes itself from the publish-subscribe service provided by gproc
+%% when the WebSocket session ends.
 websocket_terminate(_Reason, _Req, _State) ->
 	gproc:unreg({p, l, ?WS_KEY}),
 	ok.
 
-%% @doc Contains static test data	
+%% @doc Contains static test data
+%%
+%% For internal use only, provides a well-defined set of coordinates and locations to the Map tool for debugging purposes.
 get_test() ->
 	[
 		[{l, <<"Tester">>}, {x, 0}, {y, 0}],

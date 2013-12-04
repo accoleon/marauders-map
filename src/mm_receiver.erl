@@ -39,17 +39,27 @@
 start_link() ->
 	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 	
-%% @doc Stops the receiver
-%% @spec stop() -> ok
-%% @end
+%% @doc Stops the Receiver
+-spec stop() -> ok.
 stop() ->
 	gen_server:cast(?MODULE, stop).
 	
-%% @doc Send data to the receiver
+%% @doc Store a row of data on the Receiver
+%%
+%% Called over RPC by capture nodes to store wireless data.
+-spec store(Data) -> ok when
+	Data :: {ThisNode, {MAC, SignalStrength, SeqNo}},
+	ThisNode :: pid(),
+	MAC :: bitstring(),
+	SignalStrength :: integer(),
+	SeqNo :: integer().
 store(Data) ->
 	gen_server:cast(?MODULE, {store, Data}).
 		
-%% Initializes the server	
+%% @doc Initializes the Receiver
+%%
+%% Called by the supervisor, not directly.
+-spec init([]) -> {ok, atom() | pid(), 0}.
 init([]) ->
 	process_flag(trap_exit, true),
 	erlang:send_after(?AGE_INTERVAL, self(), age_data),
@@ -60,22 +70,24 @@ terminate(Reason, _State) ->
 	io:format("mm_receiver terminating: ~p~n", [Reason]),
 	ok.
 	
-%% Default handle_call
+%% @doc Default handle_call
+%% @private
 handle_call(_Req, _From, State) ->
 	{noreply, ok, State}.
 	
-%% Dump handle
+%% @doc Handler for dump
+%% @private
 handle_cast(dump, State) ->
 	List = ets:tab2list(?MODULE),
 	io:format("~p~n", [List]),
 	{noreply, State};
 	
-%% Stop handle
+%% @doc Handler for stop
 handle_cast(stop, State) ->
 	io:format("mm_receiver stopping~n"),
 	{stop, ok, State};
 	
-%% Store handle
+%% @doc Handler for store
 handle_cast({store, {From, {MAC, SS, SeqNo}}}, State) ->
 	Hash = get_key(MAC, SeqNo),
 	NewRow = setelement(get_SS_field(From), #row{hash=Hash, mac=MAC,
@@ -138,6 +150,11 @@ get_SS_field(Field) ->
 		nodeB -> #row.nodeB;
 		nodeC -> #row.nodeC
 	end.
-	
+
+%% @doc Dumps incomplete packet data currently held in memory to screen.
+%%
+%% Used for debugging purposes.
+-spec dump() -> ok.
 dump() ->
-	gen_server:cast(?MODULE, dump).
+	gen_server:cast(?MODULE, dump),
+	ok.
