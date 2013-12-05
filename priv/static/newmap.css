@@ -1,0 +1,22 @@
+html {
+	background-image:url('map/LeatherDesk.png');
+	height: 100%;
+}
+body {
+	font-family: "Helvetica Neue", Helvetica, sans-serif;
+	background-image:url('map/OldPaper.png');
+	width: 950px;
+	height: 100%;
+	margin: 0 auto 0 auto;
+}
+#title {
+	display: block;
+	margin: auto;
+}
+canvas {
+	display: block;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin: -320px 0 0 -320px;
+}
