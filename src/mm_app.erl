@@ -26,10 +26,12 @@
 start(normal, []) ->
 	Dispatch = cowboy_router:compile([
 		{'_', [
-			{"/", cowboy_static, {priv_file, mm, "map.html"}},
+			{"/", cowboy_static, {priv_file, mm, "newmap.html"}},
 			{"/trainer", cowboy_static, {priv_file, mm, "trainer.html"}},
 			{"/websocket", mm_ws_handler, []},
-			{"/static/[...]", cowboy_static, {priv_dir, mm, "static"}}
+			{"/static/[...]", cowboy_static, {priv_dir, mm, "static",
+				[{mimetypes, cow_mimetypes, all}]}}
+			
 		]}
 	]),
 	{ok, _} = cowboy:start_http(http, 100, [{port, 8080}],
