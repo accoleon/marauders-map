@@ -7,9 +7,9 @@ Marauder’s Map is a fun and interactive way of showing where people are in an 
 
 
 
-For an overview of the architecture and the design rationale behind Marauder's Map, take a look at the [software architecture][ARCHITECTURE.md].
+For an overview of the architecture and the design rationale behind Marauder's Map, take a look at the [software architecture](ARCHITECTURE.md).
 
-For a detailed description of what makes Marauder's Map tick, check out the [technical documentation][TECHDOC.md].
+For a detailed description of what makes Marauder's Map tick, check out the [technical documentation](TECHDOC.md).
 
 Adventurous administrators can try installing their own setup with the instructions below.
 
