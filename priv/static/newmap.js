@@ -34,7 +34,6 @@ var x = d3.scale.linear()
 $(function() {
 	init();
 	animate();
-	demo();
 });
 
 function animate() {
@@ -173,6 +172,8 @@ function logoFadedOut() {
 	graphics.lineStyle(1, 0xFF0000);
 	graphics.drawRect(0, 0, 290, 290);
 	box.addChild(graphics);
+	
+	demo();
 }
 
 function main() {
