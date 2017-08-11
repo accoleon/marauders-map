@@ -5,6 +5,7 @@ Introduction
 ------------
 Marauder’s Map is a fun and interactive way of showing where people are in an area in realtime. When someone enters, a set of footprints appear on the map where they're standing. As they walk around, and go from place to place, the map periodically updates their location. There is no app to install or secret phrase to recite. Anyone with a smartphone or Wi-Fi device can participate in this interactive map.
 
+Non-functioning demo: http://accoleon.github.io/marauders-map/priv/newmap
 
 
 For an overview of the architecture and the design rationale behind Marauder's Map, take a look at the [software architecture](ARCHITECTURE.md).
