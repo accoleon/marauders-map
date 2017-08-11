@@ -123,14 +123,14 @@ function demo() {
 	updatePoint(p2);
 	
 	setInterval(function(){
-		p1.x++;
-		p1.y++;
+		p1.x+=0.5;
+		p1.y+=0.2;
 		p1.time = Date.now()/1000;
-		p2.x--;
+		p2.x-=0.1;
 		p2.time = Date.now()/1000;
 		updatePoint(p1);
 		updatePoint(p2);
-	}, 1000);
+	}, 500);
 }
 
 function logoFadedIn() {
