@@ -34,6 +34,7 @@ var x = d3.scale.linear()
 $(function() {
 	init();
 	animate();
+	demo();
 });
 
 function animate() {
@@ -104,8 +105,7 @@ function init() {
 		ease: Power1.easeIn,
 		onComplete: logoFadedIn
 	});
-	
-	demo();
+
 	// Clear old data
 	setInterval(function() {
 		for (var key in points) {
@@ -117,6 +117,7 @@ function init() {
 }
 
 function demo() {
+	console.log("Starting demo");
 	var p1 = {x:10,y:10,time:(Date.now()/1000),name:'p1'};
 	updatePoint(p1);
 	
