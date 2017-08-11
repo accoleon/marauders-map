@@ -117,15 +117,20 @@ function init() {
 
 function demo() {
 	console.log("Starting demo");
-	var p1 = {x:10,y:10,time:(Date.now()/1000),name:'p1'};
+	var p1 = {x:1,y:1,time:(Date.now()/1000),name:'p1'};
+	var p2 = {x:20,y:10,time:(Date.now()/1000),name:'p2'};
 	updatePoint(p1);
+	updatePoint(p2);
 	
 	setInterval(function(){
 		p1.x++;
 		p1.y++;
 		p1.time = Date.now()/1000;
+		p2.x--;
+		p2.time = Date.now()/1000;
 		updatePoint(p1);
-	}, 20);
+		updatePoint(p2);
+	}, 1000);
 }
 
 function logoFadedIn() {
