@@ -117,8 +117,8 @@ function init() {
 
 function demo() {
 	console.log("Starting demo");
-	var p1 = {x:100,y:100,time:(Date.now()/1000),name:'p1',i:'p1'};
-	var p2 = {x:200,y:100,time:(Date.now()/1000),name:'p2',i:'p2'};
+	var p1 = {x:100,y:100,time:(Date.now()/1000),name:'p1',i:1};
+	var p2 = {x:200,y:100,time:(Date.now()/1000),name:'p2',i:2};
 	updatePoint(p1);
 	updatePoint(p2);
 	
