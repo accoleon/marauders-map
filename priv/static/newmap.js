@@ -105,6 +105,7 @@ function init() {
 		onComplete: logoFadedIn
 	});
 	
+	demo();
 	// Clear old data
 	setInterval(function() {
 		for (var key in points) {
@@ -113,6 +114,18 @@ function init() {
 			}
 		}
 	}, 15);
+}
+
+function demo() {
+	var p1 = {x:10,y:10,time:(Date.now()/1000),name:'p1'};
+	updatePoint(p1);
+	
+	setInterval(function(){
+		p1.x++;
+		p1.y++;
+		p1.time = Date.now()/1000;
+		updatePoint(p1);
+	}, 20);
 }
 
 function logoFadedIn() {
